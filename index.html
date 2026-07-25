@@ -65,11 +65,56 @@
       display: flex; align-items: center; gap: 10px;
     }
     .nav-logo-mark {
-      width: 32px; height: 32px;
-      border: 1.5px solid var(--gold);
+      width: 38px; height: 38px; flex: 0 0 38px;
       display: flex; align-items: center; justify-content: center;
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.1rem; font-weight: 600; color: var(--gold);
+      position: relative; isolation: isolate;
+      border-radius: 50%;
+      filter: drop-shadow(0 3px 7px rgba(0,0,0,0.42));
+    }
+    .nav-logo-mark::before {
+      content: ''; position: absolute; z-index: -1; inset: -4px;
+      border-radius: 50%;
+      background: conic-gradient(
+        from 0deg,
+        transparent 0 22%,
+        rgba(224,192,122,0.95) 30%,
+        transparent 39% 72%,
+        rgba(201,164,76,0.75) 80%,
+        transparent 89%
+      );
+      opacity: 0.68;
+      animation: crestOrbit 5.5s linear infinite;
+    }
+    .nav-logo-mark::after {
+      content: ''; position: absolute; z-index: 2; inset: -1px;
+      border: 1px solid rgba(224,192,122,0.58);
+      border-radius: 50%;
+      box-shadow: inset 0 0 8px rgba(201,164,76,0.16),
+                  0 0 12px rgba(201,164,76,0.16);
+      pointer-events: none;
+    }
+    .nav-logo-mark img {
+      width: 100%; height: 100%; display: block;
+      object-fit: cover; border-radius: 50%;
+      animation: crestBreathe 3.8s ease-in-out infinite;
+      transition: filter 0.35s ease;
+    }
+    .nav-logo:hover .nav-logo-mark img {
+      animation: crestSalute 0.75s cubic-bezier(.2,.8,.2,1);
+      filter: brightness(1.12) saturate(1.08);
+    }
+    @keyframes crestOrbit {
+      to { transform: rotate(360deg); }
+    }
+    @keyframes crestBreathe {
+      0%, 100% { transform: scale(1); filter: brightness(0.96); }
+      50% { transform: scale(1.055); filter: brightness(1.1); }
+    }
+    @keyframes crestSalute {
+      0% { transform: scale(1) rotate(0); }
+      45% { transform: scale(1.12) rotate(-6deg); }
+      72% { transform: scale(1.06) rotate(3deg); }
+      100% { transform: scale(1) rotate(0); }
     }
     .nav-links { display: flex; gap: 2.4rem; list-style: none; }
     .nav-links a {
@@ -1064,7 +1109,7 @@
     @media (max-width: 480px) {
       nav { padding: 0 4vw; }
       .nav-logo { gap: 8px; font-size: 1.08rem; }
-      .nav-logo-mark { width: 30px; height: 30px; }
+      .nav-logo-mark { width: 34px; height: 34px; flex-basis: 34px; }
       section { padding: 4rem 5vw; }
       h2.section-title { font-size: clamp(2.15rem, 12vw, 3rem); }
       .hero-actions { flex-direction: column; align-items: stretch; }
@@ -1099,7 +1144,9 @@
   <!-- Navigation -->
   <nav id="navbar">
     <a class="nav-logo" href="#hero">
-      <div class="nav-logo-mark">K</div>
+      <span class="nav-logo-mark" aria-hidden="true">
+        <img src="public/koundinya-capital-logo.png" alt="">
+      </span>
       Koundinya Capital
     </a>
     <ul class="nav-links">
