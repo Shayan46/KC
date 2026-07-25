@@ -592,40 +592,123 @@
     #cta p { font-size: 1rem; color: var(--muted); margin-bottom: 2.8rem; line-height: 1.8; }
 
     /* ── Contact Form ── */
-    #contact { background: var(--emerald); }
+    #contact {
+      position: relative; overflow: hidden;
+      background:
+        radial-gradient(circle at 12% 20%, rgba(201,164,76,0.08), transparent 34%),
+        linear-gradient(145deg, var(--emerald), var(--dark-green));
+    }
+    #contact::before {
+      content: ''; position: absolute; width: 420px; height: 420px;
+      right: -180px; bottom: -220px; border-radius: 50%;
+      border: 1px solid rgba(201,164,76,0.1); pointer-events: none;
+    }
     .contact-grid {
-      display: grid; grid-template-columns: 1fr 1.4fr; gap: 6rem;
-      max-width: 1200px; margin: 0 auto; align-items: start;
+      display: grid; grid-template-columns: 0.85fr 1.15fr; gap: 2rem;
+      max-width: 1200px; margin: 0 auto; align-items: stretch;
+      position: relative; z-index: 1;
+    }
+    .contact-info, .contact-form {
+      position: relative; border: 1px solid var(--border);
+      background: rgba(255,255,255,0.018);
+    }
+    .contact-info {
+      padding: 3.2rem; display: flex; flex-direction: column;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.025);
+    }
+    .contact-info::before {
+      content: 'KC'; position: absolute; right: 1.8rem; top: 1rem;
+      font-family: 'Cormorant Garamond', serif; font-size: 5rem;
+      color: rgba(201,164,76,0.045); line-height: 1; pointer-events: none;
     }
     .contact-info h2 {
       font-family: 'Cormorant Garamond', serif;
-      font-size: 2.8rem; font-weight: 300; margin-bottom: 1.2rem;
+      font-size: clamp(2.5rem, 4vw, 3.5rem); font-weight: 300;
+      line-height: 1.06; margin-bottom: 1.2rem;
     }
+    .contact-intro {
+      color: var(--muted); font-size: 0.92rem; line-height: 1.8;
+      max-width: 370px; margin-bottom: 2rem;
+    }
+    .contact-details { margin-top: auto; }
     .contact-detail {
-      display: flex; gap: 1rem; padding: 1.2rem 0;
+      display: grid; grid-template-columns: 78px 1fr; gap: 1rem;
+      align-items: center; padding: 1.15rem 0;
       border-bottom: 1px solid var(--border);
-      font-size: 0.9rem; color: var(--muted);
+      font-size: 0.88rem; color: var(--muted);
     }
-    .contact-detail:last-of-type { border-bottom: none; }
-    .contact-detail strong { color: var(--white); min-width: 80px; font-weight: 500; }
-    .form-group { margin-bottom: 1.4rem; }
+    .contact-detail:last-child { border-bottom: none; }
+    .contact-detail strong {
+      color: var(--gold); font-size: 0.65rem; font-weight: 600;
+      letter-spacing: 0.16em; text-transform: uppercase;
+    }
+    .contact-detail a {
+      color: var(--white); text-decoration: none; transition: color 0.3s;
+    }
+    .contact-detail a:hover { color: var(--gold-light); }
+    .contact-badge {
+      display: inline-flex; align-items: center; gap: 9px;
+      width: fit-content; margin-top: 2rem; padding: 8px 12px;
+      border: 1px solid rgba(201,164,76,0.28);
+      color: var(--muted); font-size: 0.62rem; letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+    .contact-badge::before {
+      content: ''; width: 5px; height: 5px; border-radius: 50%;
+      background: var(--gold); box-shadow: 0 0 10px rgba(201,164,76,0.7);
+    }
+    .contact-form {
+      padding: 3.2rem; overflow: hidden;
+      background:
+        linear-gradient(135deg, rgba(201,164,76,0.045), transparent 36%),
+        rgba(3,16,12,0.28);
+    }
+    .contact-form::before {
+      content: ''; position: absolute; left: 0; top: 0;
+      width: 100%; height: 2px;
+      background: linear-gradient(90deg, var(--gold), transparent 75%);
+    }
+    .form-header { margin-bottom: 2.2rem; }
+    .form-header h3 {
+      font-family: 'Cormorant Garamond', serif;
+      color: var(--white); font-size: 2rem; font-weight: 400;
+      margin-bottom: 0.45rem;
+    }
+    .form-header p { color: var(--muted); font-size: 0.82rem; line-height: 1.7; }
+    .form-group { margin-bottom: 1.35rem; }
     .form-group label {
-      display: block; font-size: 0.72rem; letter-spacing: 0.15em;
-      text-transform: uppercase; color: var(--muted); margin-bottom: 0.6rem;
+      display: block; font-size: 0.66rem; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--gold); margin-bottom: 0.65rem;
     }
     .form-group input, .form-group select, .form-group textarea {
-      width: 100%; background: rgba(255,255,255,0.04);
+      width: 100%; background: rgba(255,255,255,0.025);
       border: 1px solid var(--border); color: var(--white);
-      padding: 12px 16px; font-family: 'Inter', sans-serif;
-      font-size: 0.9rem; outline: none; transition: border-color 0.3s;
+      padding: 14px 15px; font-family: 'Inter', sans-serif;
+      font-size: 0.88rem; outline: none;
+      transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
       -webkit-appearance: none; border-radius: 0;
+    }
+    .form-group input::placeholder, .form-group textarea::placeholder {
+      color: rgba(190,201,196,0.48);
     }
     .form-group select option { background: var(--dark-green); }
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-      border-color: rgba(201,164,76,0.5);
+      border-color: rgba(201,164,76,0.58);
+      background: rgba(255,255,255,0.04);
+      box-shadow: 0 0 0 3px rgba(201,164,76,0.06);
     }
-    .form-group textarea { resize: none; height: 120px; }
+    .form-group textarea { resize: vertical; min-height: 130px; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-footer {
+      display: flex; align-items: center; gap: 1rem;
+      margin-top: 0.3rem;
+    }
+    .form-footer .btn-primary {
+      min-width: 190px; border: none; cursor: pointer;
+      font-family: 'Inter', sans-serif;
+    }
+    .form-note { color: var(--muted); font-size: 0.68rem; line-height: 1.55; }
+    .form-honeypot { position: absolute !important; left: -9999px !important; }
 
     /* ── Footer ── */
     footer {
@@ -718,6 +801,9 @@
       .brand-vision-caption { right: 1rem; bottom: 1rem; }
       .stats-bar { grid-template-columns: repeat(2, 1fr); }
       .form-row { grid-template-columns: 1fr; }
+      .contact-info, .contact-form { padding: 2rem; }
+      .form-footer { align-items: stretch; flex-direction: column; }
+      .form-footer .btn-primary { width: 100%; }
       .footer-top { grid-template-columns: 1fr; }
     }
   </style>
@@ -1134,61 +1220,81 @@
   <!-- Contact -->
   <section id="contact">
     <div class="contact-grid">
-      <div class="contact-info">
+      <div class="contact-info reveal">
         <div class="section-eyebrow reveal">Get in Touch</div>
         <h2 class="reveal">Begin the<br><em style="font-style:italic;color:var(--gold)">conversation.</em></h2>
-        <div class="about-divider reveal"></div>
-        <div class="contact-detail reveal">
-          <strong>Email</strong>
-          <span style="color:var(--muted)">contact@koundinyacapital.com</span>
+        <p class="contact-intro reveal" style="transition-delay:0.08s">
+          Tell us where you are today and what you want your capital to achieve. Every enquiry is handled personally and with complete discretion.
+        </p>
+        <div class="contact-details">
+          <div class="contact-detail reveal" style="transition-delay:0.12s">
+            <strong>Email</strong>
+            <a href="mailto:contact@koundinyacapital.com">contact@koundinyacapital.com</a>
+          </div>
+          <div class="contact-detail reveal" style="transition-delay:0.18s">
+            <strong>Phone</strong>
+            <a href="tel:+917019913141">7019913141</a>
+          </div>
+          <div class="contact-detail reveal" style="transition-delay:0.24s">
+            <strong>Office</strong>
+            <span>Bengaluru · India</span>
+          </div>
         </div>
-        <div class="contact-detail reveal" style="transition-delay:0.07s">
-          <strong>Phone</strong>
-          <span style="color:var(--muted)">+91 98765 43210</span>
-        </div>
-        <div class="contact-detail reveal" style="transition-delay:0.14s">
-          <strong>Office</strong>
-          <span style="color:var(--muted)">Mumbai · India</span>
-        </div>
-        <div class="contact-detail reveal" style="transition-delay:0.21s">
-          <strong>Hours</strong>
-          <span style="color:var(--muted)">Mon – Fri · 9:00 AM – 6:00 PM IST</span>
-        </div>
+        <div class="contact-badge reveal" style="transition-delay:0.3s">Private · Confidential · No obligation</div>
       </div>
-      <div class="reveal">
+      <form class="contact-form reveal"
+            action="https://formsubmit.co/contact@koundinyacapital.com"
+            method="POST">
+        <input type="hidden" name="_subject" value="New enquiry from Koundinya Capital website">
+        <input type="hidden" name="_template" value="table">
+        <input type="hidden" name="_captcha" value="false">
+        <input class="form-honeypot" type="text" name="_honey" tabindex="-1" autocomplete="off">
+        <div class="form-header">
+          <h3>Tell us what you’re building.</h3>
+          <p>Share a few details and we’ll get in touch for a confidential introductory conversation.</p>
+        </div>
         <div class="form-row">
           <div class="form-group">
-            <label>First Name</label>
-            <input type="text" placeholder="Arjun"/>
+            <label for="first-name">First Name</label>
+            <input id="first-name" name="First Name" type="text"
+                   placeholder="Enter your first name" autocomplete="given-name" required>
           </div>
           <div class="form-group">
-            <label>Last Name</label>
-            <input type="text" placeholder="Sharma"/>
+            <label for="last-name">Last Name</label>
+            <input id="last-name" name="Last Name" type="text"
+                   placeholder="Enter your last name" autocomplete="family-name" required>
           </div>
         </div>
         <div class="form-group">
-          <label>Email Address</label>
-          <input type="email" placeholder="arjun@example.com"/>
+          <label for="email">Email Address</label>
+          <input id="email" name="Email" type="email"
+                 placeholder="you@company.com" autocomplete="email" required>
         </div>
         <div class="form-group">
-          <label>Phone Number</label>
-          <input type="tel" placeholder="+91 98765 43210"/>
+          <label for="phone">Phone Number</label>
+          <input id="phone" name="Phone" type="tel"
+                 placeholder="+91 70199 13141" autocomplete="tel" required>
         </div>
         <div class="form-group">
-          <label>Service of Interest</label>
-          <select>
-            <option value="">Select a service...</option>
+          <label for="service">Service of Interest</label>
+          <select id="service" name="Service of Interest" required>
+            <option value="" disabled selected>Choose a service</option>
             <option>Portfolio Management</option>
             <option>Wealth Advisory</option>
             <option>Financial Planning</option>
           </select>
         </div>
         <div class="form-group">
-          <label>Your Message</label>
-          <textarea placeholder="Tell us about your financial goals and what you'd like to discuss…"></textarea>
+          <label for="message">Your Message</label>
+          <textarea id="message" name="Message"
+                    placeholder="Share your goals, investment horizon, and what you would like to discuss."
+                    required></textarea>
         </div>
-        <button class="btn-primary" style="width:100%">Send Message</button>
-      </div>
+        <div class="form-footer">
+          <button type="submit" class="btn-primary">Send Enquiry</button>
+          <p class="form-note">Your information is used only to respond to this enquiry.</p>
+        </div>
+      </form>
     </div>
   </section>
 
@@ -1237,7 +1343,7 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <span>© 2025 Koundinya Capital. All rights reserved. | SEBI Registered Investment Adviser</span>
+      <span>© 2025 Koundinya Capital. All rights reserved.</span>
       <div class="footer-socials">
         <a href="#" title="LinkedIn">in</a>
         <a href="#" title="Twitter">𝕏</a>
