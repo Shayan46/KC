@@ -141,6 +141,64 @@
       text-decoration: none; display: inline-block;
     }
     .btn-outline:hover { border-color: var(--gold); color: var(--gold); transform: translateY(-1px); }
+    .btn-primary, .btn-outline, .nav-cta,
+    .newsletter-form button, .footer-socials a {
+      position: relative; overflow: hidden; isolation: isolate;
+    }
+    .click-tap { animation: clickTap 0.28s ease; }
+    .click-pop { animation: clickPop 0.48s cubic-bezier(.2,.9,.25,1); }
+    .click-pop::after {
+      content: ''; position: absolute; left: 50%; top: 50%; z-index: -1;
+      width: 12px; height: 12px; border-radius: 50%;
+      background: rgba(255,255,255,0.46);
+      transform: translate(-50%,-50%) scale(0);
+      animation: goldRipple 0.5s ease-out;
+    }
+    .click-sweep::after {
+      content: ''; position: absolute; inset: 0; z-index: -1;
+      background: linear-gradient(110deg, transparent 24%, rgba(201,164,76,0.24) 48%, transparent 72%);
+      transform: translateX(-115%);
+      animation: borderSweep 0.55s ease-out;
+    }
+    .click-pulse { animation: navPulse 0.58s ease-out; }
+    .click-lift { display: inline-block; animation: linkLift 0.38s ease; }
+    .click-arrow { animation: arrowKick 0.46s ease; }
+    .click-flash { animation: buttonFlash 0.5s ease; }
+    .click-spin { animation: socialSpin 0.55s cubic-bezier(.3,.8,.25,1); }
+    .click-send { animation: sendConfirm 0.62s cubic-bezier(.2,.9,.25,1); }
+    @keyframes clickTap {
+      50% { transform: scale(0.96); filter: brightness(1.14); }
+    }
+    @keyframes clickPop {
+      35% { transform: translateY(2px) scale(0.96); }
+      70% { transform: translateY(-3px) scale(1.025); box-shadow: 0 12px 30px rgba(201,164,76,0.2); }
+    }
+    @keyframes goldRipple {
+      to { transform: translate(-50%,-50%) scale(18); opacity: 0; }
+    }
+    @keyframes borderSweep {
+      to { transform: translateX(115%); }
+    }
+    @keyframes navPulse {
+      35% { transform: scale(0.95); }
+      65% { box-shadow: 0 0 0 7px rgba(201,164,76,0.12), 0 0 28px rgba(201,164,76,0.18); }
+    }
+    @keyframes linkLift {
+      45% { transform: translateY(-4px); color: var(--gold-light); }
+    }
+    @keyframes arrowKick {
+      40% { transform: translateX(8px); letter-spacing: 0.16em; }
+    }
+    @keyframes buttonFlash {
+      45% { background: var(--white); color: var(--emerald); box-shadow: 0 0 24px rgba(201,164,76,0.35); }
+    }
+    @keyframes socialSpin {
+      45% { transform: rotate(10deg) scale(1.16); border-color: var(--gold); background: rgba(201,164,76,0.12); }
+    }
+    @keyframes sendConfirm {
+      35% { transform: scale(0.97); }
+      70% { transform: translateY(-3px); box-shadow: 0 14px 32px rgba(201,164,76,0.25); background: var(--gold-light); }
+    }
     .hero-scroll {
       position: absolute; bottom: 2.5rem; left: 50%; transform: translateX(-50%);
       display: flex; flex-direction: column; align-items: center; gap: 8px;
@@ -269,6 +327,10 @@
     @media (prefers-reduced-motion: reduce) {
       .brand-visual-sheen { animation: none; }
       .brand-visual-image img { transition: none; }
+      .click-tap, .click-pop, .click-sweep, .click-pulse,
+      .click-lift, .click-arrow, .click-flash, .click-spin, .click-send {
+        animation: none !important;
+      }
     }
 
     section { padding: 7rem 5vw; }
@@ -604,7 +666,7 @@
       border: 1px solid rgba(201,164,76,0.1); pointer-events: none;
     }
     .contact-grid {
-      display: grid; grid-template-columns: 0.85fr 1.15fr; gap: 2rem;
+      display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 0;
       max-width: 1200px; margin: 0 auto; align-items: stretch;
       position: relative; z-index: 1;
     }
@@ -613,8 +675,16 @@
       background: rgba(255,255,255,0.018);
     }
     .contact-info {
-      padding: 3.2rem; display: flex; flex-direction: column;
+      padding: 2.65rem; display: flex; flex-direction: column;
       box-shadow: inset 0 1px 0 rgba(255,255,255,0.025);
+    }
+    .contact-info.reveal {
+      transform: translateX(-32px);
+      transition: opacity 0.8s ease, transform 0.9s cubic-bezier(.2,.75,.2,1), box-shadow 0.8s ease;
+    }
+    .contact-info.reveal.visible {
+      transform: translateX(0);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.025), -18px 20px 55px rgba(0,0,0,0.18);
     }
     .contact-info::before {
       content: 'KC'; position: absolute; right: 1.8rem; top: 1rem;
@@ -658,24 +728,33 @@
       background: var(--gold); box-shadow: 0 0 10px rgba(201,164,76,0.7);
     }
     .contact-form {
-      padding: 3.2rem; overflow: hidden;
+      padding: 2.35rem 2.55rem; overflow: hidden;
+      border-left: none;
       background:
         linear-gradient(135deg, rgba(201,164,76,0.045), transparent 36%),
         rgba(3,16,12,0.28);
+    }
+    .contact-form.reveal {
+      transform: translateX(32px) scale(0.985);
+      transition: opacity 0.8s 0.08s ease, transform 0.9s 0.08s cubic-bezier(.2,.75,.2,1), box-shadow 0.8s ease;
+    }
+    .contact-form.reveal.visible {
+      transform: translateX(0) scale(1);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.025), 18px 20px 55px rgba(0,0,0,0.16);
     }
     .contact-form::before {
       content: ''; position: absolute; left: 0; top: 0;
       width: 100%; height: 2px;
       background: linear-gradient(90deg, var(--gold), transparent 75%);
     }
-    .form-header { margin-bottom: 2.2rem; }
+    .form-header { margin-bottom: 1.35rem; }
     .form-header h3 {
       font-family: 'Cormorant Garamond', serif;
-      color: var(--white); font-size: 2rem; font-weight: 400;
-      margin-bottom: 0.45rem;
+      color: var(--white); font-size: 1.72rem; font-weight: 400;
+      margin-bottom: 0.35rem;
     }
     .form-header p { color: var(--muted); font-size: 0.82rem; line-height: 1.7; }
-    .form-group { margin-bottom: 1.35rem; }
+    .form-group { margin-bottom: 0.9rem; }
     .form-group label {
       display: block; font-size: 0.66rem; letter-spacing: 0.15em;
       text-transform: uppercase; color: var(--gold); margin-bottom: 0.65rem;
@@ -683,7 +762,7 @@
     .form-group input, .form-group select, .form-group textarea {
       width: 100%; background: rgba(255,255,255,0.025);
       border: 1px solid var(--border); color: var(--white);
-      padding: 14px 15px; font-family: 'Inter', sans-serif;
+      padding: 11px 13px; font-family: 'Inter', sans-serif;
       font-size: 0.88rem; outline: none;
       transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
       -webkit-appearance: none; border-radius: 0;
@@ -697,7 +776,7 @@
       background: rgba(255,255,255,0.04);
       box-shadow: 0 0 0 3px rgba(201,164,76,0.06);
     }
-    .form-group textarea { resize: vertical; min-height: 130px; }
+    .form-group textarea { resize: vertical; min-height: 92px; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
     .form-footer {
       display: flex; align-items: center; gap: 1rem;
@@ -802,6 +881,9 @@
       .stats-bar { grid-template-columns: repeat(2, 1fr); }
       .form-row { grid-template-columns: 1fr; }
       .contact-info, .contact-form { padding: 2rem; }
+      .contact-form { border-left: 1px solid var(--border); border-top: none; }
+      .contact-info.reveal, .contact-form.reveal { transform: translateY(24px); }
+      .contact-info.reveal.visible, .contact-form.reveal.visible { transform: translateY(0); }
       .form-footer { align-items: stretch; flex-direction: column; }
       .form-footer .btn-primary { width: 100%; }
       .footer-top { grid-template-columns: 1fr; }
@@ -1468,6 +1550,51 @@
   document.querySelectorAll('h2.section-title em, h1.hero-title em').forEach(el => {
     el.style.textShadow = '0 0 30px rgba(201,164,76,0.2)';
   });
+
+  // ── Distinct click feedback by button family ──
+  const clickFeedback = [
+    ['.contact-form .btn-primary', 'click-send'],
+    ['.hero-actions .btn-primary, #cta .btn-primary', 'click-pop'],
+    ['.btn-outline', 'click-sweep'],
+    ['.nav-cta', 'click-pulse'],
+    ['.insight-link', 'click-arrow'],
+    ['.newsletter-form button', 'click-flash'],
+    ['.footer-socials a', 'click-spin'],
+    ['.nav-links a, .footer-col a, .nav-logo', 'click-lift'],
+    ['.btn-primary', 'click-pop']
+  ];
+
+  const replayClickAnimation = (element, animationClass) => {
+    element.classList.remove(animationClass, 'click-tap');
+    void element.offsetWidth;
+    element.classList.add(animationClass, 'click-tap');
+    window.setTimeout(() => element.classList.remove(animationClass, 'click-tap'), 700);
+  };
+
+  const assigned = new WeakSet();
+  clickFeedback.forEach(([selector, animationClass]) => {
+    document.querySelectorAll(selector).forEach(element => {
+      if (assigned.has(element)) return;
+      assigned.add(element);
+      element.addEventListener('click', () => replayClickAnimation(element, animationClass));
+    });
+  });
+
+  // Let the enquiry button complete its confirmation animation before leaving.
+  const enquiryForm = document.querySelector('.contact-form');
+  if (enquiryForm) {
+    enquiryForm.addEventListener('submit', event => {
+      if (!enquiryForm.checkValidity() || enquiryForm.dataset.sending === 'true') return;
+      event.preventDefault();
+      enquiryForm.dataset.sending = 'true';
+      const submitButton = enquiryForm.querySelector('button[type="submit"]');
+      if (submitButton) {
+        submitButton.textContent = 'Preparing Enquiry…';
+        replayClickAnimation(submitButton, 'click-send');
+      }
+      window.setTimeout(() => enquiryForm.submit(), 620);
+    });
+  }
   </script>
 </body>
 </html>
