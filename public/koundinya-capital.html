@@ -787,7 +787,14 @@
       font-family: 'Inter', sans-serif;
     }
     .form-note { color: var(--muted); font-size: 0.68rem; line-height: 1.55; }
-    .form-honeypot { position: absolute !important; left: -9999px !important; }
+    .submission-frame {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      border: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
 
     /* ── Footer ── */
     footer {
@@ -854,6 +861,14 @@
       font-family: 'Inter', sans-serif;
     }
     .newsletter-form button:hover { background: var(--gold-light); }
+    .newsletter-status {
+      display: block;
+      min-height: 1.2em;
+      margin-top: 0.55rem;
+      color: rgba(245,244,240,0.58);
+      font-size: 0.68rem;
+      letter-spacing: 0.04em;
+    }
 
     /* Mobile */
     @media (max-width: 1024px) {
@@ -1327,13 +1342,13 @@
         </div>
         <div class="contact-badge reveal" style="transition-delay:0.3s">Private · Confidential · No obligation</div>
       </div>
+      <iframe class="submission-frame" name="google-enquiry-submit" title="Enquiry submission"></iframe>
       <form class="contact-form reveal"
-            action="https://formsubmit.co/skc202618@gmail.com"
-            method="POST">
-        <input type="hidden" name="_subject" value="New enquiry from Koundinya Capital website">
-        <input type="hidden" name="_template" value="table">
-        <input type="hidden" name="_captcha" value="false">
-        <input class="form-honeypot" type="text" name="_honey" tabindex="-1" autocomplete="off">
+            action="https://docs.google.com/forms/d/e/1FAIpQLSfR_9N4fkCdoFmlJQG3-8RaNbrAxQzFa4d76zxRncUjRDBnoQ/formResponse"
+            method="POST"
+            target="google-enquiry-submit">
+        <input type="hidden" name="fvv" value="1">
+        <input type="hidden" name="pageHistory" value="0">
         <div class="form-header">
           <h3>Tell us what you’re building.</h3>
           <p>Share a few details and we’ll get in touch for a confidential introductory conversation.</p>
@@ -1341,28 +1356,28 @@
         <div class="form-row">
           <div class="form-group">
             <label for="first-name">First Name</label>
-            <input id="first-name" name="First Name" type="text"
+            <input id="first-name" name="entry.228428180" type="text"
                    placeholder="Enter your first name" autocomplete="given-name" required>
           </div>
           <div class="form-group">
             <label for="last-name">Last Name</label>
-            <input id="last-name" name="Last Name" type="text"
+            <input id="last-name" name="entry.1128511675" type="text"
                    placeholder="Enter your last name" autocomplete="family-name" required>
           </div>
         </div>
         <div class="form-group">
           <label for="email">Email Address</label>
-          <input id="email" name="Email" type="email"
+          <input id="email" name="entry.492156363" type="email"
                  placeholder="you@company.com" autocomplete="email" required>
         </div>
         <div class="form-group">
           <label for="phone">Phone Number</label>
-          <input id="phone" name="Phone" type="tel"
+          <input id="phone" name="entry.171207549" type="tel"
                  placeholder="+91 70199 13141" autocomplete="tel" required>
         </div>
         <div class="form-group">
           <label for="service">Service of Interest</label>
-          <select id="service" name="Service of Interest" required>
+          <select id="service" name="entry.2102642048" required>
             <option value="" disabled selected>Choose a service</option>
             <option>Portfolio Management</option>
             <option>Wealth Advisory</option>
@@ -1371,13 +1386,13 @@
         </div>
         <div class="form-group">
           <label for="message">Your Message</label>
-          <textarea id="message" name="Message"
+          <textarea id="message" name="entry.960686764"
                     placeholder="Share your goals, investment horizon, and what you would like to discuss."
                     required></textarea>
         </div>
         <div class="form-footer">
           <button type="submit" class="btn-primary">Send Enquiry</button>
-          <p class="form-note">Your information is used only to respond to this enquiry.</p>
+          <p class="form-note" aria-live="polite">Your information is used only to respond to this enquiry.</p>
         </div>
       </form>
     </div>
@@ -1392,18 +1407,25 @@
           Koundinya Capital
         </div>
         <p>Private investment and wealth management. Preserving and growing capital for those who think in generations.</p>
+        <iframe class="submission-frame" name="google-newsletter-submit" title="Newsletter submission"></iframe>
         <form class="newsletter-form"
-              action="https://formsubmit.co/skc202618@gmail.com"
-              method="POST">
-          <input type="hidden" name="_subject" value="New Koundinya Capital newsletter subscription">
-          <input type="hidden" name="_template" value="table">
-          <input type="hidden" name="_captcha" value="false">
-          <input type="email" name="Subscriber Email"
+              action="https://docs.google.com/forms/d/e/1FAIpQLSfR_9N4fkCdoFmlJQG3-8RaNbrAxQzFa4d76zxRncUjRDBnoQ/formResponse"
+              method="POST"
+              target="google-newsletter-submit">
+          <input type="hidden" name="fvv" value="1">
+          <input type="hidden" name="pageHistory" value="0">
+          <input type="hidden" name="entry.228428180" value="Newsletter">
+          <input type="hidden" name="entry.1128511675" value="Subscriber">
+          <input type="hidden" name="entry.171207549" value="Not provided">
+          <input type="hidden" name="entry.2102642048" value="Portfolio Management">
+          <input type="hidden" name="entry.960686764" value="Newsletter subscription from the website footer.">
+          <input type="email" name="entry.492156363"
                  placeholder="Your email address"
                  aria-label="Email address for newsletter"
                  autocomplete="email" required>
           <button type="submit">Subscribe</button>
         </form>
+        <span class="newsletter-status" aria-live="polite"></span>
       </div>
       <div class="footer-col">
         <h4>Navigation</h4>
@@ -1591,35 +1613,82 @@
     });
   });
 
-  // Let the enquiry button complete its confirmation animation before leaving.
+  // Submit through Google Forms without sending visitors away from the website.
   const enquiryForm = document.querySelector('.contact-form');
+  const enquiryFrame = document.querySelector('iframe[name="google-enquiry-submit"]');
   if (enquiryForm) {
     enquiryForm.addEventListener('submit', event => {
       if (!enquiryForm.checkValidity() || enquiryForm.dataset.sending === 'true') return;
       event.preventDefault();
       enquiryForm.dataset.sending = 'true';
+      enquiryForm.dataset.awaitingResponse = 'true';
       const submitButton = enquiryForm.querySelector('button[type="submit"]');
+      const formNote = enquiryForm.querySelector('.form-note');
       if (submitButton) {
-        submitButton.textContent = 'Preparing Enquiry…';
+        submitButton.disabled = true;
+        submitButton.textContent = 'Sending Enquiry…';
         replayClickAnimation(submitButton, 'click-send');
       }
+      if (formNote) formNote.textContent = 'Securely sending your enquiry through Google Forms…';
       window.setTimeout(() => enquiryForm.submit(), 620);
     });
   }
 
-  // Keep the newsletter button visible long enough to acknowledge the click.
+  if (enquiryFrame && enquiryForm) {
+    enquiryFrame.addEventListener('load', () => {
+      if (enquiryForm.dataset.awaitingResponse !== 'true') return;
+      enquiryForm.dataset.awaitingResponse = 'false';
+      enquiryForm.dataset.sending = 'false';
+      enquiryForm.reset();
+      const submitButton = enquiryForm.querySelector('button[type="submit"]');
+      const formNote = enquiryForm.querySelector('.form-note');
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = 'Enquiry Sent ✓';
+      }
+      if (formNote) formNote.textContent = 'Thank you — your enquiry has been sent. We’ll contact you soon.';
+      window.setTimeout(() => {
+        if (submitButton) submitButton.textContent = 'Send Enquiry';
+      }, 4200);
+    });
+  }
+
   const newsletterForm = document.querySelector('.newsletter-form');
+  const newsletterFrame = document.querySelector('iframe[name="google-newsletter-submit"]');
   if (newsletterForm) {
     newsletterForm.addEventListener('submit', event => {
       if (!newsletterForm.checkValidity() || newsletterForm.dataset.sending === 'true') return;
       event.preventDefault();
       newsletterForm.dataset.sending = 'true';
+      newsletterForm.dataset.awaitingResponse = 'true';
       const subscribeButton = newsletterForm.querySelector('button[type="submit"]');
+      const newsletterStatus = document.querySelector('.newsletter-status');
       if (subscribeButton) {
+        subscribeButton.disabled = true;
         subscribeButton.textContent = 'Subscribing...';
         replayClickAnimation(subscribeButton, 'click-flash');
       }
+      if (newsletterStatus) newsletterStatus.textContent = 'Sending securely…';
       window.setTimeout(() => newsletterForm.submit(), 520);
+    });
+  }
+
+  if (newsletterFrame && newsletterForm) {
+    newsletterFrame.addEventListener('load', () => {
+      if (newsletterForm.dataset.awaitingResponse !== 'true') return;
+      newsletterForm.dataset.awaitingResponse = 'false';
+      newsletterForm.dataset.sending = 'false';
+      newsletterForm.reset();
+      const subscribeButton = newsletterForm.querySelector('button[type="submit"]');
+      const newsletterStatus = document.querySelector('.newsletter-status');
+      if (subscribeButton) {
+        subscribeButton.disabled = false;
+        subscribeButton.textContent = 'Subscribed ✓';
+      }
+      if (newsletterStatus) newsletterStatus.textContent = 'You’re on the list.';
+      window.setTimeout(() => {
+        if (subscribeButton) subscribeButton.textContent = 'Subscribe';
+      }, 4200);
     });
   }
   </script>
