@@ -29,6 +29,14 @@
       line-height: 1.7;
       overflow-x: hidden;
     }
+    body.menu-open { overflow: hidden; }
+    a, button, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+    a:focus-visible, button:focus-visible, input:focus-visible,
+    select:focus-visible, textarea:focus-visible {
+      outline: 2px solid var(--gold-light);
+      outline-offset: 3px;
+    }
+    section[id] { scroll-margin-top: 72px; }
     ::selection { background: var(--gold); color: var(--black); }
 
     /* ── Scroll Progress Bar ── */
@@ -78,8 +86,42 @@
       text-decoration: none;
     }
     .nav-cta:hover { background: var(--gold); color: var(--black); }
-    .nav-hamburger { display: none; cursor: pointer; flex-direction: column; gap: 5px; }
-    .nav-hamburger span { display: block; width: 24px; height: 1.5px; background: var(--white); transition: all 0.3s; }
+    .nav-hamburger {
+      display: none; cursor: pointer; flex-direction: column; gap: 5px;
+      width: 44px; height: 44px; padding: 0;
+      align-items: center; justify-content: center;
+      color: inherit; background: transparent;
+      border: 1px solid rgba(201,164,76,0.22);
+      font: inherit; position: relative; overflow: hidden;
+      transition: border-color 0.35s ease, background 0.35s ease,
+                  box-shadow 0.35s ease, transform 0.35s ease;
+    }
+    .nav-hamburger::before {
+      content: ''; position: absolute; inset: 5px;
+      border: 1px solid rgba(201,164,76,0.34);
+      background: radial-gradient(circle, rgba(201,164,76,0.15), transparent 68%);
+      opacity: 0; transform: scale(0.45) rotate(-90deg);
+      transition: opacity 0.35s ease, transform 0.45s cubic-bezier(.2,.8,.2,1);
+    }
+    .nav-hamburger:hover, .nav-hamburger.is-open {
+      border-color: var(--gold);
+      background: rgba(201,164,76,0.08);
+      box-shadow: 0 0 24px rgba(201,164,76,0.13);
+    }
+    .nav-hamburger.is-open { transform: scale(1.04); }
+    .nav-hamburger.is-open::before { opacity: 1; transform: scale(1) rotate(90deg); }
+    .nav-hamburger span {
+      position: relative; z-index: 1;
+      display: block; width: 24px; height: 1.5px; background: var(--white);
+      transform-origin: center;
+      transition: transform 0.42s cubic-bezier(.2,.8,.2,1), opacity 0.25s ease,
+                  background 0.3s ease;
+    }
+    .nav-hamburger.is-open span { background: var(--gold-light); }
+    .nav-hamburger.is-open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg) scaleX(0.86); }
+    .nav-hamburger.is-open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+    .nav-hamburger.is-open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg) scaleX(0.86); }
+    .mobile-nav { display: none; }
 
     /* ── Hero ── */
     #hero {
@@ -325,6 +367,12 @@
       88%, 100% { transform: translateX(130%); opacity: 0; }
     }
     @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
       .brand-visual-sheen { animation: none; }
       .brand-visual-image img { transition: none; }
       .click-tap, .click-pop, .click-sweep, .click-pulse,
@@ -714,6 +762,7 @@
     }
     .contact-detail a {
       color: var(--white); text-decoration: none; transition: color 0.3s;
+      overflow-wrap: anywhere;
     }
     .contact-detail a:hover { color: var(--gold-light); }
     .contact-badge {
@@ -828,12 +877,16 @@
       transition: color 0.3s;
     }
     .footer-col ul li a:hover { color: var(--white); }
+    .footer-static-link {
+      color: rgba(245,244,240,0.36);
+      font-size: 0.88rem;
+    }
     .footer-bottom {
       display: flex; align-items: center; justify-content: space-between;
       padding-top: 2rem; font-size: 0.78rem; color: rgba(245,244,240,0.3);
     }
     .footer-socials { display: flex; gap: 1rem; }
-    .footer-socials a {
+    .footer-socials a, .footer-socials span {
       width: 36px; height: 36px; border: 1px solid rgba(255,255,255,0.1);
       display: flex; align-items: center; justify-content: center;
       color: var(--muted); text-decoration: none; font-size: 0.8rem;
@@ -878,25 +931,114 @@
       .stat-item:nth-child(2) { border-right: none; }
       .footer-top { grid-template-columns: 1fr 1fr; }
       .process-grid { grid-template-columns: repeat(2, 1fr); }
+      .process-connector { display: none; }
       .services-showcase { grid-template-columns: 1fr 1fr; grid-template-rows: auto; }
       .service-card:first-child { grid-row: auto; grid-column: 1 / 3; min-height: 320px; }
     }
     @media (max-width: 768px) {
       .nav-links, .nav-cta { display: none; }
       .nav-hamburger { display: flex; }
+      .hero-actions {
+        width: min(100%, 650px);
+        margin-inline: auto;
+        align-items: stretch;
+      }
+      .hero-actions .btn-primary, .hero-actions .btn-outline {
+        display: flex; flex: 0 0 calc((100% - 1.2rem) / 2);
+        width: calc((100% - 1.2rem) / 2);
+        min-width: 0; min-height: 52px;
+        align-items: center; justify-content: center;
+        padding: 12px 18px;
+        line-height: 1.35; text-align: center;
+      }
+      .mobile-nav {
+        position: fixed; display: flex; flex-direction: column;
+        inset: 72px 0 0; z-index: 890;
+        padding: 1.6rem 5vw 2.2rem;
+        background:
+          radial-gradient(circle at 100% 0%, rgba(201,164,76,0.09), transparent 42%),
+          rgba(8,30,23,0.985);
+        border-top: 1px solid var(--border);
+        opacity: 0; visibility: hidden; pointer-events: none;
+        transform: translateY(-18px) scaleY(0.985);
+        transform-origin: top;
+        clip-path: inset(0 0 100% 0);
+        transition: opacity 0.34s ease, transform 0.42s cubic-bezier(.2,.8,.2,1),
+                    clip-path 0.48s cubic-bezier(.2,.8,.2,1), visibility 0.42s;
+        overflow-y: auto;
+      }
+      .mobile-nav::before {
+        content: ''; position: absolute; inset: 0;
+        pointer-events: none; opacity: 0.24;
+        background:
+          linear-gradient(90deg, transparent 0 95%, rgba(201,164,76,0.12) 95%),
+          linear-gradient(rgba(201,164,76,0.045) 1px, transparent 1px);
+        background-size: 100% 100%, 100% 72px;
+      }
+      .mobile-nav.is-open {
+        opacity: 1; visibility: visible; pointer-events: auto;
+        transform: translateY(0) scaleY(1);
+        clip-path: inset(0);
+      }
+      .mobile-nav a {
+        position: relative; z-index: 1;
+        min-height: 52px; display: flex; align-items: center;
+        color: var(--white); text-decoration: none;
+        border-bottom: 1px solid rgba(201,164,76,0.14);
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.55rem; letter-spacing: 0.02em;
+        opacity: 0; transform: translateX(18px);
+      }
+      .mobile-nav.is-open a { animation: mobileNavLinkIn 0.42s both cubic-bezier(.2,.8,.2,1); }
+      .mobile-nav.is-open a:nth-child(1) { animation-delay: 0.10s; }
+      .mobile-nav.is-open a:nth-child(2) { animation-delay: 0.14s; }
+      .mobile-nav.is-open a:nth-child(3) { animation-delay: 0.18s; }
+      .mobile-nav.is-open a:nth-child(4) { animation-delay: 0.22s; }
+      .mobile-nav.is-open a:nth-child(5) { animation-delay: 0.26s; }
+      .mobile-nav.is-open a:nth-child(6) { animation-delay: 0.30s; }
+      .mobile-nav.is-open a:nth-child(7) { animation-delay: 0.34s; }
+      @keyframes mobileNavLinkIn {
+        to { opacity: 1; transform: translateX(0); }
+      }
+      .mobile-nav a:active { color: var(--gold-light); }
+      .mobile-nav .mobile-nav-cta {
+        justify-content: center; min-height: 50px;
+        margin-top: 1.5rem; padding: 0.75rem 1rem;
+        border: 1px solid var(--gold);
+        color: var(--gold); font-family: 'Inter', sans-serif;
+        font-size: 0.76rem; font-weight: 600;
+        letter-spacing: 0.11em; text-transform: uppercase;
+      }
+      section { padding: 4.75rem 5vw; }
+      #hero {
+        min-height: 100svh;
+        padding: 94px 5vw 3.5rem;
+      }
+      h1.hero-title { font-size: clamp(2.7rem, 13vw, 4.3rem); }
+      .hero-badge { margin-bottom: 1.7rem; padding: 6px 12px; font-size: 0.63rem; }
+      .hero-sub { font-size: 0.95rem; margin-bottom: 2.2rem; }
       .about-grid, .why-grid, .contact-grid { grid-template-columns: 1fr; }
+      .about-grid, .why-grid { gap: 3rem; }
+      .about-image, .why-image { aspect-ratio: 4 / 3; }
       .philosophy-grid, .testimonials-grid { grid-template-columns: 1fr; }
       .insights-grid { grid-template-columns: 1fr; }
       .process-grid { grid-template-columns: 1fr; }
+      .philosophy-grid, .services-showcase, .process-grid,
+      .testimonials-grid, .insights-grid { margin-top: 2.5rem; }
       .services-showcase { grid-template-columns: 1fr; }
       .service-card:first-child { grid-column: auto; min-height: 280px; }
       .service-card { min-height: 260px; padding: 2rem; }
+      .service-card-number { font-size: 8rem; }
       #brand-vision { padding: 4.5rem 4vw; }
       .brand-vision-heading { align-items: flex-start; flex-direction: column; gap: 0.7rem; }
       .brand-visual { padding: 6px; }
       .brand-visual-image { aspect-ratio: 16 / 10; }
       .brand-vision-caption { right: 1rem; bottom: 1rem; }
       .stats-bar { grid-template-columns: repeat(2, 1fr); }
+      .stats-bar { padding: 2.2rem 5vw; }
+      .stat-item:nth-child(-n+2) { border-bottom: 1px solid var(--border); padding-bottom: 1.25rem; }
+      .stat-item:nth-child(n+3) { padding-top: 1.25rem; }
+      .stat-number { font-size: 2.45rem; }
       .form-row { grid-template-columns: 1fr; }
       .contact-info, .contact-form { padding: 2rem; }
       .contact-form { border-left: 1px solid var(--border); border-top: none; }
@@ -905,6 +1047,47 @@
       .form-footer { align-items: stretch; flex-direction: column; }
       .form-footer .btn-primary { width: 100%; }
       .footer-top { grid-template-columns: 1fr; }
+      .footer-top { gap: 2.5rem; }
+      .footer-bottom {
+        align-items: flex-start; flex-direction: column; gap: 1.25rem;
+      }
+      #cta { padding: 5rem 5vw; }
+      .form-group input, .form-group select, .form-group textarea,
+      .newsletter-form input { font-size: 16px; }
+      .about-process-cta { display: flex; justify-content: center; }
+      .about-process-cta .btn-outline {
+        display: flex; min-height: 50px;
+        align-items: center; justify-content: center;
+        text-align: center;
+      }
+    }
+    @media (max-width: 480px) {
+      nav { padding: 0 4vw; }
+      .nav-logo { gap: 8px; font-size: 1.08rem; }
+      .nav-logo-mark { width: 30px; height: 30px; }
+      section { padding: 4rem 5vw; }
+      h2.section-title { font-size: clamp(2.15rem, 12vw, 3rem); }
+      .hero-actions { flex-direction: column; align-items: stretch; }
+      .hero-actions .btn-primary, .hero-actions .btn-outline {
+        flex: 0 0 auto;
+        width: 100%; min-height: 54px; padding-inline: 1rem;
+      }
+      .about-process-cta .btn-outline { width: min(100%, 300px); }
+      .hero-scroll { display: none; }
+      .brand-vision-caption {
+        left: 0.75rem; right: auto; bottom: 0.75rem;
+        max-width: calc(100% - 1.5rem);
+        font-size: 0.56rem; letter-spacing: 0.11em;
+      }
+      .brand-vision-note { font-size: 0.9rem; }
+      .philosophy-card { padding: 2rem 1.5rem; }
+      .service-card, .service-card:first-child { min-height: 235px; padding: 1.6rem; }
+      .process-step, .testimonial-card { padding: 2rem 1.5rem; }
+      .contact-info, .contact-form { padding: 1.5rem; }
+      .contact-detail { grid-template-columns: 68px minmax(0,1fr); gap: 0.75rem; }
+      .contact-badge { line-height: 1.5; }
+      footer { padding-inline: 5vw; }
+      .newsletter-form button { padding-inline: 10px; }
     }
   </style>
 </head>
@@ -915,7 +1098,7 @@
 
   <!-- Navigation -->
   <nav id="navbar">
-    <a class="nav-logo" href="#">
+    <a class="nav-logo" href="#hero">
       <div class="nav-logo-mark">K</div>
       Koundinya Capital
     </a>
@@ -928,10 +1111,20 @@
       <li><a href="#contact">Contact</a></li>
     </ul>
     <a href="#contact" class="nav-cta">Schedule a Consultation</a>
-    <div class="nav-hamburger" id="hamburger">
+    <button class="nav-hamburger" id="hamburger" type="button"
+            aria-label="Open navigation" aria-controls="mobile-navigation" aria-expanded="false">
       <span></span><span></span><span></span>
-    </div>
+    </button>
   </nav>
+  <div class="mobile-nav" id="mobile-navigation" aria-hidden="true">
+    <a href="#hero">Home</a>
+    <a href="#about">About</a>
+    <a href="#services">Services</a>
+    <a href="#process">Process</a>
+    <a href="#insights">Insights</a>
+    <a href="#contact">Contact</a>
+    <a href="#contact" class="mobile-nav-cta">Schedule a Consultation</a>
+  </div>
 
   <!-- Hero -->
   <section id="hero">
@@ -1021,7 +1214,7 @@
         <p class="section-body reveal" style="margin-top:1.2rem;transition-delay:0.2s">
           We serve a selective group of individuals, families, and institutions who value long-term thinking over short-term speculation. Every relationship begins with a clear understanding of what matters most to you.
         </p>
-        <div style="margin-top:2.8rem;" class="reveal" style="transition-delay:0.3s">
+        <div class="about-process-cta reveal" style="margin-top:2.8rem;transition-delay:0.3s">
           <a href="#process" class="btn-outline">Our Investment Process</a>
         </div>
       </div>
@@ -1272,32 +1465,32 @@
           <div class="section-eyebrow reveal">Market Intelligence</div>
           <h2 class="section-title reveal" style="margin-bottom:0">Insights from<br><em>the inside.</em></h2>
         </div>
-        <a href="#" class="insight-link reveal" style="margin-bottom:0.5rem;">View All Insights →</a>
+        <a href="#contact" class="insight-link reveal" style="margin-bottom:0.5rem;">Speak With Us →</a>
       </div>
       <div class="insights-grid">
         <div class="insight-card reveal">
           <div class="insight-tag">Market Outlook</div>
           <h3>Navigating Rate Cycles Without Losing Long-Term Conviction</h3>
           <p>How disciplined capital allocation outperforms during uncertainty.</p>
-          <a href="#" class="insight-link">Read →</a>
+          <a href="#contact" class="insight-link">Discuss →</a>
         </div>
         <div class="insight-card reveal" style="transition-delay:0.1s">
           <div class="insight-tag">Economic Research</div>
           <h3>India's Credit Cycle: What the Next Decade Holds for Investors</h3>
           <p>A deep look at structural tailwinds shaping private wealth returns.</p>
-          <a href="#" class="insight-link">Read →</a>
+          <a href="#contact" class="insight-link">Discuss →</a>
         </div>
         <div class="insight-card reveal" style="transition-delay:0.2s">
           <div class="insight-tag">Investment Articles</div>
           <h3>Why Risk Management Is the Most Underrated Alpha Generator</h3>
           <p>Asymmetric protection as a strategy, not an afterthought.</p>
-          <a href="#" class="insight-link">Read →</a>
+          <a href="#contact" class="insight-link">Discuss →</a>
         </div>
         <div class="insight-card reveal" style="transition-delay:0.3s">
           <div class="insight-tag">Weekly Commentary</div>
           <h3>Portfolio Review: What Volatile Markets Reveal About Conviction</h3>
           <p>Our weekly read on positioning, patience, and the discipline of doing nothing.</p>
-          <a href="#" class="insight-link">Read →</a>
+          <a href="#contact" class="insight-link">Discuss →</a>
         </div>
       </div>
     </div>
@@ -1441,27 +1634,27 @@
       <div class="footer-col">
         <h4>Services</h4>
         <ul>
-          <li><a href="#">Portfolio Management</a></li>
-          <li><a href="#">Wealth Advisory</a></li>
-          <li><a href="#">Financial Planning</a></li>
+          <li><a href="#services">Portfolio Management</a></li>
+          <li><a href="#services">Wealth Advisory</a></li>
+          <li><a href="#services">Financial Planning</a></li>
         </ul>
       </div>
       <div class="footer-col">
         <h4>Legal</h4>
         <ul>
-          <li><a href="#">Privacy Policy</a></li>
-          <li><a href="#">Terms & Conditions</a></li>
-          <li><a href="#">Disclaimer</a></li>
-          <li><a href="#">FAQ</a></li>
-          <li><a href="#">Careers</a></li>
+          <li><span class="footer-static-link">Privacy Policy</span></li>
+          <li><span class="footer-static-link">Terms & Conditions</span></li>
+          <li><span class="footer-static-link">Disclaimer</span></li>
+          <li><span class="footer-static-link">FAQ</span></li>
+          <li><span class="footer-static-link">Careers</span></li>
         </ul>
       </div>
     </div>
     <div class="footer-bottom">
-      <span>© 2025 Koundinya Capital. All rights reserved.</span>
+      <span>© <span id="footer-year">2026</span> Koundinya Capital. All rights reserved.</span>
       <div class="footer-socials">
-        <a href="#" title="LinkedIn">in</a>
-        <a href="#" title="Twitter">𝕏</a>
+        <span title="LinkedIn profile coming soon" aria-label="LinkedIn profile coming soon">in</span>
+        <span title="X profile coming soon" aria-label="X profile coming soon">𝕏</span>
       </div>
     </div>
   </footer>
@@ -1470,9 +1663,40 @@
   // ── Scroll Progress ──
   const bar = document.getElementById('progress-bar');
   window.addEventListener('scroll', () => {
-    const p = window.scrollY / (document.body.scrollHeight - window.innerHeight);
+    const scrollDistance = document.documentElement.scrollHeight - window.innerHeight;
+    const p = scrollDistance > 0 ? window.scrollY / scrollDistance : 0;
     bar.style.width = (p * 100) + '%';
-  });
+  }, { passive: true });
+
+  // ── Accessible Mobile Navigation ──
+  const hamburger = document.getElementById('hamburger');
+  const mobileNav = document.getElementById('mobile-navigation');
+  const setMobileMenu = open => {
+    if (!hamburger || !mobileNav) return;
+    hamburger.classList.toggle('is-open', open);
+    mobileNav.classList.toggle('is-open', open);
+    hamburger.setAttribute('aria-expanded', String(open));
+    hamburger.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
+    mobileNav.setAttribute('aria-hidden', String(!open));
+    document.body.classList.toggle('menu-open', open);
+  };
+  if (hamburger && mobileNav) {
+    hamburger.addEventListener('click', () => {
+      setMobileMenu(hamburger.getAttribute('aria-expanded') !== 'true');
+    });
+    mobileNav.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => setMobileMenu(false));
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && hamburger.getAttribute('aria-expanded') === 'true') {
+        setMobileMenu(false);
+        hamburger.focus();
+      }
+    });
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 768) setMobileMenu(false);
+    }, { passive: true });
+  }
 
   // ── Reveal on Scroll ──
   const reveals = document.querySelectorAll('.reveal');
@@ -1504,6 +1728,7 @@
   // ── Hero Canvas: Moving Market Line + Particles ──
   const canvas = document.getElementById('hero-canvas');
   const ctx = canvas.getContext('2d');
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let W, H, particles = [], linePoints = [];
 
   function resize() {
@@ -1515,7 +1740,8 @@
 
   function initParticles() {
     particles = [];
-    for (let i = 0; i < 55; i++) {
+    const particleCount = prefersReducedMotion ? 0 : (W < 768 ? 24 : 55);
+    for (let i = 0; i < particleCount; i++) {
       particles.push({
         x: Math.random() * W, y: Math.random() * H,
         vx: (Math.random() - 0.5) * 0.25,
@@ -1572,10 +1798,10 @@
     });
 
     frame++;
-    requestAnimationFrame(animate);
+    if (!prefersReducedMotion) requestAnimationFrame(animate);
   }
 
-  window.addEventListener('resize', resize);
+  window.addEventListener('resize', resize, { passive: true });
   resize();
   animate();
 
@@ -1592,8 +1818,8 @@
     ['.nav-cta', 'click-pulse'],
     ['.insight-link', 'click-arrow'],
     ['.newsletter-form button', 'click-flash'],
-    ['.footer-socials a', 'click-spin'],
-    ['.nav-links a, .footer-col a, .nav-logo', 'click-lift'],
+    ['.nav-hamburger', 'click-pulse'],
+    ['.mobile-nav a, .nav-links a, .footer-col a, .nav-logo', 'click-lift'],
     ['.btn-primary', 'click-pop']
   ];
 
@@ -1612,6 +1838,9 @@
       element.addEventListener('click', () => replayClickAnimation(element, animationClass));
     });
   });
+
+  const footerYear = document.getElementById('footer-year');
+  if (footerYear) footerYear.textContent = new Date().getFullYear();
 
   // Submit through Google Forms without sending visitors away from the website.
   const enquiryForm = document.querySelector('.contact-form');
