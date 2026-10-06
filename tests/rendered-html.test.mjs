@@ -1,91 +1,78 @@
 import assert from "node:assert/strict";
-import { access, readFile, readdir } from "node:fs/promises";
+import { access, readFile, stat } from "node:fs/promises";
+import path from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 
-const developmentPreviewMeta =
-  /<meta(?=[^>]*\bname=["']codex-preview["'])(?=[^>]*\bcontent=["']development["'])[^>]*>/i;
-const templateRoot = new URL("../", import.meta.url);
-const previewRoot = new URL("../app/_sites-preview/", import.meta.url);
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const pagePaths = [
+  path.join(root, "index.html"),
+  path.join(root, "public", "koundinya-capital.html"),
+];
 
-async function render() {
-  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
-  workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
-  const { default: worker } = await import(workerUrl.href);
+const readPages = () => Promise.all(pagePaths.map(page => readFile(page, "utf8")));
 
-  return worker.fetch(
-    new Request("http://localhost/", {
-      headers: { accept: "text/html" },
-    }),
-    {
-      ASSETS: {
-        fetch: async () => new Response("Not found", { status: 404 }),
-      },
-    },
-    {
-      waitUntil() {},
-      passThroughOnException() {},
-    },
-  );
-}
+test("ships complete, accessible static pages", async () => {
+  const pages = await readPages();
 
-test("server-renders the starter loading skeleton", async () => {
-  const response = await render();
-  assert.equal(response.status, 200);
-  assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
+  for (const html of pages) {
+    assert.match(html, /<!doctype html>/i);
+    assert.match(html, /<html lang="en"/i);
+    assert.match(html, /<meta name="viewport"/i);
+    assert.match(html, /<meta name="description"/i);
+    assert.match(html, /class="skip-link" href="#main-content"/i);
+    assert.match(html, /<main id="main-content">/i);
+    assert.match(html, /id="mobile-navigation"[^>]*aria-hidden="true"[^>]*inert/i);
+    assert.match(html, /<section id="testimonials" hidden>/i);
+    assert.match(html, /<canvas id="hero-canvas" aria-hidden="true"><\/canvas>/i);
+    assert.doesNotMatch(html, /\b(?:src|href)=""/i);
+    assert.doesNotMatch(html, /console\.(?:log|warn|error)/i);
+    assert.doesNotMatch(html, /\.png["']/i);
+    assert.doesNotMatch(html, /Mumbai/i);
 
-  const html = await response.text();
-  assert.match(html, developmentPreviewMeta);
-  assert.match(html, /<title>Your site is taking shape<\/title>/i);
-  assert.match(html, /Building your site/);
-  assert.match(html, /Your site is taking shape/);
-  assert.match(
-    html,
-    /Your first version will appear here automatically when it’s ready\./,
-  );
-  assert.doesNotMatch(html, /Codex/);
-  assert.match(html, /react-loading-skeleton/);
-  assert.match(html, /role="status"/);
+    const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
+    assert.equal(new Set(ids).size, ids.length, "page IDs must be unique");
+
+    const images = [...html.matchAll(/<img\b[^>]*>/gis)].map(match => match[0]);
+    assert.equal(images.length, 4);
+    for (const image of images) {
+      assert.match(image, /\bwidth="\d+"/i);
+      assert.match(image, /\bheight="\d+"/i);
+      assert.match(image, /\bdecoding="async"/i);
+    }
+    assert.equal(images.filter(image => /\bloading="lazy"/i.test(image)).length, 3);
+
+    assert.match(html, /class="contact-form[^"]*"[\s\S]*?target="google-enquiry-submit"/i);
+    assert.match(html, /name="google-enquiry-submit"/i);
+    assert.match(html, /class="newsletter-form"[\s\S]*?target="google-newsletter-submit"/i);
+    assert.match(html, /name="google-newsletter-submit"/i);
+  }
 });
 
-test("keeps the loading skeleton scoped and disposable", async () => {
-  const [preview, css, page, layout, packageJson, files] = await Promise.all([
-    readFile(new URL("SkeletonPreview.tsx", previewRoot), "utf8"),
-    readFile(new URL("preview.css", previewRoot), "utf8"),
-    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../package.json", import.meta.url), "utf8"),
-    readdir(previewRoot),
-  ]);
+test("keeps both deployment entry points synchronized", async () => {
+  const [rootHtml, publicHtml] = await readPages();
+  assert.equal(rootHtml.replaceAll('"public/', '"'), publicHtml);
+});
 
-  assert.deepEqual(files.sort(), ["SkeletonPreview.tsx", "preview.css"]);
-  assert.match(preview, /from "react-loading-skeleton"/);
-  assert.match(preview, /baseColor="#eceae7"/);
-  assert.match(preview, /highlightColor="#f9f8f6"/);
-  assert.match(preview, /duration=\{2\.8\}/);
-  assert.match(preview, /sites-skeleton-search-placeholder/);
-  assert.match(packageJson, /"react-loading-skeleton": "3\.5\.0"/);
+test("references existing local assets and keeps image payload lean", async () => {
+  const pages = await readPages();
+  const imageAssets = new Set();
 
-  const shellIndex = preview.indexOf('className="sites-skeleton-shell"');
-  const statusIndex = preview.indexOf('className="sites-skeleton-status"');
-  assert.ok(shellIndex >= 0 && statusIndex > shellIndex);
-  assert.match(css, /position:\s*fixed/);
-  assert.match(css, /inset:\s*0/);
-  assert.match(css, /opacity:\s*0\.52/);
-  assert.match(css, /prefers-reduced-motion:\s*reduce/);
-  assert.doesNotMatch(css, /#020617|canvas|pets|progress/i);
-  assert.doesNotMatch(
-    preview,
-    /loading-spinner|status-mark|status-progress|canvas|cookie|random/i,
-  );
+  for (let index = 0; index < pages.length; index += 1) {
+    const html = pages[index];
+    const base = path.dirname(pagePaths[index]);
+    const references = [...html.matchAll(/\b(?:src|href)="([^"]+)"/g)]
+      .map(match => match[1])
+      .filter(reference => !/^(?:#|https?:|mailto:|tel:|data:)/i.test(reference));
 
-  assert.match(page, /export const metadata:\s*Metadata/);
-  assert.match(page, /"codex-preview": "development"/);
-  assert.match(page, /<SkeletonPreview \/>/);
-  assert.match(layout, /title:\s*"Starter Project"/);
-  assert.doesNotMatch(layout, /codex-preview|_sites-preview|themeColor|\bViewport\b/);
-  assert.doesNotMatch(css, /(^|\s)(html|body)\s*\{/m);
+    for (const reference of references) {
+      const assetPath = path.resolve(base, reference);
+      await access(assetPath);
+      if (reference.endsWith(".webp")) imageAssets.add(assetPath);
+    }
+  }
 
-  await assert.rejects(
-    access(new URL("public/_sites-preview", templateRoot)),
-  );
+  let imageBytes = 0;
+  for (const assetPath of imageAssets) imageBytes += (await stat(assetPath)).size;
+  assert.ok(imageBytes < 400_000, `optimized images total ${imageBytes} bytes`);
 });

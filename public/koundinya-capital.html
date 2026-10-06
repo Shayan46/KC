@@ -1,10 +1,16 @@
 <!DOCTYPE html>
-<html lang="en"><head>
+<html lang="en" class="no-js"><head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Koundinya Capital — Building Wealth. Preserving Legacy.</title>
   <meta name="description" content="Koundinya Capital is a private investment and wealth management firm focused on preserving capital while generating sustainable long-term returns."/>
+  <meta name="theme-color" content="#0F2D24"/>
+  <meta name="color-scheme" content="dark"/>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <script>document.documentElement.classList.replace('no-js', 'js');</script>
   <style>
     /* ── Reset & Base ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -19,6 +25,8 @@
       --charcoal:  #2a2a2a;
       --muted:     rgba(245,244,240,0.55);
       --border:    rgba(201,164,76,0.18);
+      --nav-height:72px;
+      --section-space:clamp(3.75rem, 7vw, 5.5rem);
     }
     html { scroll-behavior: smooth; }
     body {
@@ -30,14 +38,23 @@
       overflow-x: hidden;
     }
     body.menu-open { overflow: hidden; }
+    img { display: block; max-width: 100%; }
     a, button, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+    a, button { touch-action: manipulation; }
     a:focus-visible, button:focus-visible, input:focus-visible,
     select:focus-visible, textarea:focus-visible {
       outline: 2px solid var(--gold-light);
       outline-offset: 3px;
     }
-    section[id] { scroll-margin-top: 72px; }
+    section[id] { scroll-margin-top: var(--nav-height); }
     ::selection { background: var(--gold); color: var(--black); }
+    .skip-link {
+      position: fixed; top: 10px; left: 10px; z-index: 10000;
+      padding: 10px 14px; background: var(--gold); color: var(--black);
+      font-weight: 600; text-decoration: none;
+      transform: translateY(-160%); transition: transform 0.2s ease;
+    }
+    .skip-link:focus { transform: translateY(0); }
 
     /* ── Scroll Progress Bar ── */
     #progress-bar {
@@ -57,6 +74,10 @@
       -webkit-backdrop-filter: blur(18px) saturate(160%);
       border-bottom: 1px solid var(--border);
       transition: background 0.4s;
+    }
+    nav.scrolled {
+      background: rgba(10,34,25,0.94);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.16);
     }
     .nav-logo {
       font-family: 'Cormorant Garamond', serif;
@@ -83,7 +104,7 @@
         transparent 89%
       );
       opacity: 0.68;
-      animation: crestOrbit 5.5s linear infinite;
+      transition: transform 0.7s cubic-bezier(.2,.75,.2,1), opacity 0.35s ease;
     }
     .nav-logo-mark::after {
       content: ''; position: absolute; z-index: 2; inset: -1px;
@@ -97,8 +118,8 @@
       width: 100%; height: 100%; display: block;
       object-fit: cover; border-radius: 50%;
     }
-    @keyframes crestOrbit {
-      to { transform: rotate(360deg); }
+    @media (hover: hover) {
+      .nav-logo:hover .nav-logo-mark::before { transform: rotate(120deg); opacity: 0.9; }
     }
     .nav-links { display: flex; gap: 2.4rem; list-style: none; }
     .nav-links a {
@@ -161,6 +182,7 @@
     }
     #hero-canvas {
       position: absolute; inset: 0; z-index: 0;
+      width: 100%; height: 100%;
     }
     .hero-inner {
       position: relative; z-index: 1;
@@ -204,6 +226,9 @@
       text-decoration: none; display: inline-block;
     }
     .btn-primary:hover { background: var(--gold-light); transform: translateY(-1px); }
+    .btn-primary:disabled, .newsletter-form button:disabled {
+      cursor: wait; opacity: 0.72; transform: none; filter: saturate(0.75);
+    }
     .btn-outline {
       background: transparent; border: 1px solid rgba(245,244,240,0.35);
       color: var(--white); padding: 14px 34px; font-size: 0.82rem;
@@ -413,13 +438,14 @@
       }
       .brand-visual-sheen { animation: none; }
       .brand-visual-image img { transition: none; }
+      .js .reveal { opacity: 1; transform: none; }
       .click-tap, .click-pop, .click-sweep, .click-pulse,
       .click-lift, .click-arrow, .click-flash, .click-spin, .click-send, .click-crest {
         animation: none !important;
       }
     }
 
-    section { padding: 5rem 5vw; }
+    section { padding: var(--section-space) 5vw; }
     .section-eyebrow {
       font-size: 0.7rem; letter-spacing: 0.22em; text-transform: uppercase;
       color: var(--gold); margin-bottom: 1.2rem;
@@ -437,8 +463,9 @@
       font-size: 1rem; color: var(--muted); max-width: 540px;
       line-height: 1.85;
     }
-    .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.75s ease, transform 0.75s ease; }
-    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal { opacity: 1; transform: none; }
+    .js .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.75s ease, transform 0.75s ease; }
+    .js .reveal.visible { opacity: 1; transform: translateY(0); }
 
     /* ── About ── */
     #about { background: var(--emerald); }
@@ -735,11 +762,11 @@
       padding: 2.65rem; display: flex; flex-direction: column;
       box-shadow: inset 0 1px 0 rgba(255,255,255,0.025);
     }
-    .contact-info.reveal {
+    .js .contact-info.reveal {
       transform: translateX(-32px);
       transition: opacity 0.8s ease, transform 0.9s cubic-bezier(.2,.75,.2,1), box-shadow 0.8s ease;
     }
-    .contact-info.reveal.visible {
+    .js .contact-info.reveal.visible {
       transform: translateX(0);
       box-shadow: inset 0 1px 0 rgba(255,255,255,0.025), -18px 20px 55px rgba(0,0,0,0.18);
     }
@@ -792,11 +819,11 @@
         linear-gradient(135deg, rgba(201,164,76,0.045), transparent 36%),
         rgba(3,16,12,0.28);
     }
-    .contact-form.reveal {
+    .js .contact-form.reveal {
       transform: translateX(32px) scale(0.985);
       transition: opacity 0.8s 0.08s ease, transform 0.9s 0.08s cubic-bezier(.2,.75,.2,1), box-shadow 0.8s ease;
     }
-    .contact-form.reveal.visible {
+    .js .contact-form.reveal.visible {
       transform: translateX(0) scale(1);
       box-shadow: inset 0 1px 0 rgba(255,255,255,0.025), 18px 20px 55px rgba(0,0,0,0.16);
     }
@@ -973,7 +1000,7 @@
         clip-path: inset(0 0 100% 0);
         transition: opacity 0.34s ease, transform 0.42s cubic-bezier(.2,.8,.2,1),
                     clip-path 0.48s cubic-bezier(.2,.8,.2,1), visibility 0.42s;
-        overflow-y: auto;
+        overflow-y: auto; overscroll-behavior: contain;
       }
       .mobile-nav::before {
         content: ''; position: absolute; inset: 0;
@@ -1066,8 +1093,8 @@
       .form-row { grid-template-columns: 1fr; }
       .contact-info, .contact-form { padding: 2rem; }
       .contact-form { border-left: 1px solid var(--border); border-top: none; }
-      .contact-info.reveal, .contact-form.reveal { transform: translateY(24px); }
-      .contact-info.reveal.visible, .contact-form.reveal.visible { transform: translateY(0); }
+      .js .contact-info.reveal, .js .contact-form.reveal { transform: translateY(24px); }
+      .js .contact-info.reveal.visible, .js .contact-form.reveal.visible { transform: translateY(0); }
       .form-footer { align-items: stretch; flex-direction: column; }
       .form-footer .btn-primary { width: 100%; }
       .footer-top {
@@ -1121,15 +1148,16 @@
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
 
   <!-- Scroll Progress -->
   <div id="progress-bar"></div>
 
   <!-- Navigation -->
-  <nav id="navbar">
+  <nav id="navbar" aria-label="Primary navigation">
     <a class="nav-logo" href="#hero">
       <span class="nav-logo-mark" aria-hidden="true">
-        <img src="koundinya-capital-logo.png" alt="">
+        <img src="koundinya-capital-logo.webp" alt="" width="256" height="256" decoding="async" fetchpriority="high">
       </span>
       Koundinya Capital
     </a>
@@ -1146,7 +1174,7 @@
       <span></span><span></span><span></span>
     </button>
   </nav>
-  <div class="mobile-nav" id="mobile-navigation" aria-hidden="true">
+  <div class="mobile-nav" id="mobile-navigation" role="navigation" aria-label="Mobile navigation" aria-hidden="true" inert>
     <a href="#hero">Home</a>
     <a href="#about">About</a>
     <a href="#services">Services</a>
@@ -1155,9 +1183,10 @@
     <a href="#contact" class="mobile-nav-cta">Schedule a Consultation</a>
   </div>
 
+  <main id="main-content">
   <!-- Hero -->
   <section id="hero">
-    <canvas id="hero-canvas"></canvas>
+    <canvas id="hero-canvas" aria-hidden="true"></canvas>
     <div class="hero-inner">
       <div class="hero-badge">
         <span>Your Private Wealth Management</span>
@@ -1208,8 +1237,10 @@
       </div>
       <figure class="brand-visual reveal" style="transition-delay:0.12s">
         <div class="brand-visual-image">
-          <img src="koundinya-capital-brand-vision.png"
+          <img src="koundinya-capital-brand-vision.webp"
                alt="Koundinya Capital brand vision representing disciplined investing, capital preservation, risk management and long-term growth"
+               width="1600"
+               height="900"
                loading="lazy"
                decoding="async">
           <div class="brand-visual-sheen" aria-hidden="true"></div>
@@ -1224,8 +1255,10 @@
     <div class="about-grid">
       <div class="about-image reveal">
         <div class="about-img-inner">
-          <img src="koundinya-capital-about.png"
-               alt="Investment professional reviewing a portfolio in a private Mumbai office"
+          <img src="koundinya-capital-about.webp"
+               alt="Investment professional reviewing a portfolio in a private office"
+               width="900"
+               height="1125"
                loading="lazy"
                decoding="async">
         </div>
@@ -1406,8 +1439,10 @@
   <section id="why">
     <div class="why-grid">
       <div class="why-image reveal">
-        <img src="koundinya-capital-advisory.png"
+        <img src="koundinya-capital-advisory.webp"
              alt="Investment advisers reviewing a portfolio in a private meeting room"
+             width="900"
+             height="1200"
              loading="lazy"
              decoding="async">
       </div>
@@ -1581,6 +1616,7 @@
       </form>
     </div>
   </section>
+  </main>
 
   <!-- Footer -->
   <footer>
@@ -1640,17 +1676,31 @@
   </footer>
 
   <script>
-  // ── Scroll Progress ──
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ── Scroll Progress + Navigation State ──
   const bar = document.getElementById('progress-bar');
-  window.addEventListener('scroll', () => {
+  const navbar = document.getElementById('navbar');
+  let scrollFramePending = false;
+  const updateScrollUi = () => {
     const scrollDistance = document.documentElement.scrollHeight - window.innerHeight;
-    const p = scrollDistance > 0 ? window.scrollY / scrollDistance : 0;
-    bar.style.width = (p * 100) + '%';
+    const progress = scrollDistance > 0 ? window.scrollY / scrollDistance : 0;
+    if (bar) bar.style.width = (progress * 100) + '%';
+    if (navbar) navbar.classList.toggle('scrolled', window.scrollY > 12);
+    scrollFramePending = false;
+  };
+  window.addEventListener('scroll', () => {
+    if (scrollFramePending) return;
+    scrollFramePending = true;
+    window.requestAnimationFrame(updateScrollUi);
   }, { passive: true });
+  updateScrollUi();
 
   // ── Accessible Mobile Navigation ──
   const hamburger = document.getElementById('hamburger');
   const mobileNav = document.getElementById('mobile-navigation');
+  const mainContent = document.getElementById('main-content');
+  const pageFooter = document.querySelector('footer');
   const setMobileMenu = open => {
     if (!hamburger || !mobileNav) return;
     hamburger.classList.toggle('is-open', open);
@@ -1658,6 +1708,9 @@
     hamburger.setAttribute('aria-expanded', String(open));
     hamburger.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
     mobileNav.setAttribute('aria-hidden', String(!open));
+    mobileNav.inert = !open;
+    if (mainContent) mainContent.inert = open;
+    if (pageFooter) pageFooter.inert = open;
     document.body.classList.toggle('menu-open', open);
   };
   if (hamburger && mobileNav) {
@@ -1672,6 +1725,17 @@
         setMobileMenu(false);
         hamburger.focus();
       }
+      if (event.key === 'Tab' && hamburger.getAttribute('aria-expanded') === 'true') {
+        const focusable = [hamburger, ...mobileNav.querySelectorAll('a')];
+        const currentIndex = focusable.indexOf(document.activeElement);
+        if (event.shiftKey && currentIndex <= 0) {
+          event.preventDefault();
+          focusable.at(-1).focus();
+        } else if (!event.shiftKey && currentIndex === focusable.length - 1) {
+          event.preventDefault();
+          hamburger.focus();
+        }
+      }
     });
     window.addEventListener('resize', () => {
       if (window.innerWidth > 768) setMobileMenu(false);
@@ -1680,47 +1744,70 @@
 
   // ── Reveal on Scroll ──
   const reveals = document.querySelectorAll('.reveal');
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
-  }, { threshold: 0.12 });
-  reveals.forEach(r => io.observe(r));
+  if (prefersReducedMotion || !('IntersectionObserver' in window)) {
+    reveals.forEach(element => element.classList.add('visible'));
+  } else {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('visible');
+        io.unobserve(entry.target);
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -5% 0px' });
+    reveals.forEach(element => { if (!element.closest('[hidden]')) io.observe(element); });
+  }
 
   // ── Animated Counters ──
   const counters = document.querySelectorAll('[data-target]');
-  const counterIO = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (!e.isIntersecting) return;
-      const el = e.target;
-      const target = +el.dataset.target;
-      const suffix = el.dataset.suffix || '';
-      let current = 0;
-      const step = target / 60;
-      const timer = setInterval(() => {
-        current = Math.min(current + step, target);
-        el.textContent = (current < target ? Math.floor(current) : target) + suffix;
-        if (current >= target) clearInterval(timer);
-      }, 20);
-      counterIO.unobserve(el);
-    });
-  }, { threshold: 0.5 });
-  counters.forEach(c => counterIO.observe(c));
+  const setCounterValue = element => {
+    element.textContent = element.dataset.target + (element.dataset.suffix || '');
+  };
+  if (prefersReducedMotion || !('IntersectionObserver' in window)) {
+    counters.forEach(setCounterValue);
+  } else {
+    const counterIO = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const element = entry.target;
+        const target = Number(element.dataset.target);
+        const suffix = element.dataset.suffix || '';
+        const start = performance.now();
+        const duration = 900;
+        const tick = now => {
+          const progress = Math.min((now - start) / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          element.textContent = Math.round(target * eased) + suffix;
+          if (progress < 1) window.requestAnimationFrame(tick);
+        };
+        window.requestAnimationFrame(tick);
+        counterIO.unobserve(element);
+      });
+    }, { threshold: 0.5 });
+    counters.forEach(counter => counterIO.observe(counter));
+  }
 
   // ── Hero Canvas: Moving Market Line + Particles ──
   const canvas = document.getElementById('hero-canvas');
-  const ctx = canvas.getContext('2d');
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let W, H, particles = [], linePoints = [];
+  const ctx = canvas ? canvas.getContext('2d') : null;
+  let W = 0, H = 0, particles = [], linePoints = [];
+  let animationFrame = 0, resizeFrame = 0, frame = 0;
 
   function resize() {
-    W = canvas.width = window.innerWidth;
-    H = canvas.height = window.innerHeight;
+    if (!canvas || !ctx) return;
+    const bounds = canvas.getBoundingClientRect();
+    W = Math.max(1, Math.round(bounds.width));
+    H = Math.max(1, Math.round(bounds.height));
+    const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(W * pixelRatio);
+    canvas.height = Math.round(H * pixelRatio);
+    ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
     initParticles();
     initLine();
   }
 
   function initParticles() {
     particles = [];
-    const particleCount = prefersReducedMotion ? 0 : (W < 768 ? 24 : 55);
+    const particleCount = prefersReducedMotion ? 0 : (W < 768 ? 18 : 40);
     for (let i = 0; i < particleCount; i++) {
       particles.push({
         x: Math.random() * W, y: Math.random() * H,
@@ -1734,16 +1821,16 @@
 
   function initLine() {
     linePoints = [];
-    const pts = 80;
+    const pts = Math.max(48, Math.min(90, Math.round(W / 18)));
     const lineCenter = W <= 768 ? H * 0.48 : H * 0.65;
     const lineSpread = W <= 768 ? H * 0.08 : H * 0.15;
     for (let i = 0; i < pts; i++) {
-      linePoints.push({ x: (i / pts) * W, y: lineCenter + (Math.random() - 0.5) * lineSpread });
+      linePoints.push({ x: (i / (pts - 1)) * W, y: lineCenter + (Math.random() - 0.5) * lineSpread });
     }
   }
 
-  let frame = 0;
   function animate() {
+    if (!ctx || !canvas) return;
     ctx.clearRect(0, 0, W, H);
 
     // gradient bg
@@ -1780,12 +1867,21 @@
     });
 
     frame++;
-    if (!prefersReducedMotion) requestAnimationFrame(animate);
+    if (!prefersReducedMotion && !document.hidden) animationFrame = requestAnimationFrame(animate);
   }
 
-  window.addEventListener('resize', resize, { passive: true });
-  resize();
-  animate();
+  if (canvas && ctx) {
+    window.addEventListener('resize', () => {
+      cancelAnimationFrame(resizeFrame);
+      resizeFrame = requestAnimationFrame(resize);
+    }, { passive: true });
+    document.addEventListener('visibilitychange', () => {
+      cancelAnimationFrame(animationFrame);
+      if (!document.hidden && !prefersReducedMotion) animationFrame = requestAnimationFrame(animate);
+    });
+    resize();
+    animate();
+  }
 
   // ── Gold shimmer on section titles ──
   document.querySelectorAll('h2.section-title em, h1.hero-title em').forEach(el => {
@@ -1827,12 +1923,14 @@
   // Submit through Google Forms without sending visitors away from the website.
   const enquiryForm = document.querySelector('.contact-form');
   const enquiryFrame = document.querySelector('iframe[name="google-enquiry-submit"]');
+  let enquiryTimeout = 0;
   if (enquiryForm) {
     enquiryForm.addEventListener('submit', event => {
       if (!enquiryForm.checkValidity() || enquiryForm.dataset.sending === 'true') return;
       event.preventDefault();
       enquiryForm.dataset.sending = 'true';
       enquiryForm.dataset.awaitingResponse = 'true';
+      enquiryForm.setAttribute('aria-busy', 'true');
       const submitButton = enquiryForm.querySelector('button[type="submit"]');
       const formNote = enquiryForm.querySelector('.form-note');
       if (submitButton) {
@@ -1842,6 +1940,18 @@
       }
       if (formNote) formNote.textContent = 'Securely sending your enquiry through Google Forms…';
       window.setTimeout(() => enquiryForm.submit(), 620);
+      clearTimeout(enquiryTimeout);
+      enquiryTimeout = window.setTimeout(() => {
+        if (enquiryForm.dataset.awaitingResponse !== 'true') return;
+        enquiryForm.dataset.awaitingResponse = 'false';
+        enquiryForm.dataset.sending = 'false';
+        enquiryForm.removeAttribute('aria-busy');
+        if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.textContent = 'Try Again';
+        }
+        if (formNote) formNote.textContent = 'We could not confirm delivery. Please try again or email skc202618@gmail.com.';
+      }, 15000);
     });
   }
 
@@ -1850,6 +1960,8 @@
       if (enquiryForm.dataset.awaitingResponse !== 'true') return;
       enquiryForm.dataset.awaitingResponse = 'false';
       enquiryForm.dataset.sending = 'false';
+      enquiryForm.removeAttribute('aria-busy');
+      clearTimeout(enquiryTimeout);
       enquiryForm.reset();
       const submitButton = enquiryForm.querySelector('button[type="submit"]');
       const formNote = enquiryForm.querySelector('.form-note');
@@ -1866,12 +1978,14 @@
 
   const newsletterForm = document.querySelector('.newsletter-form');
   const newsletterFrame = document.querySelector('iframe[name="google-newsletter-submit"]');
+  let newsletterTimeout = 0;
   if (newsletterForm) {
     newsletterForm.addEventListener('submit', event => {
       if (!newsletterForm.checkValidity() || newsletterForm.dataset.sending === 'true') return;
       event.preventDefault();
       newsletterForm.dataset.sending = 'true';
       newsletterForm.dataset.awaitingResponse = 'true';
+      newsletterForm.setAttribute('aria-busy', 'true');
       const subscribeButton = newsletterForm.querySelector('button[type="submit"]');
       const newsletterStatus = document.querySelector('.newsletter-status');
       if (subscribeButton) {
@@ -1881,6 +1995,18 @@
       }
       if (newsletterStatus) newsletterStatus.textContent = 'Sending securely…';
       window.setTimeout(() => newsletterForm.submit(), 520);
+      clearTimeout(newsletterTimeout);
+      newsletterTimeout = window.setTimeout(() => {
+        if (newsletterForm.dataset.awaitingResponse !== 'true') return;
+        newsletterForm.dataset.awaitingResponse = 'false';
+        newsletterForm.dataset.sending = 'false';
+        newsletterForm.removeAttribute('aria-busy');
+        if (subscribeButton) {
+          subscribeButton.disabled = false;
+          subscribeButton.textContent = 'Try Again';
+        }
+        if (newsletterStatus) newsletterStatus.textContent = 'We could not confirm the subscription. Please try again.';
+      }, 15000);
     });
   }
 
@@ -1889,6 +2015,8 @@
       if (newsletterForm.dataset.awaitingResponse !== 'true') return;
       newsletterForm.dataset.awaitingResponse = 'false';
       newsletterForm.dataset.sending = 'false';
+      newsletterForm.removeAttribute('aria-busy');
+      clearTimeout(newsletterTimeout);
       newsletterForm.reset();
       const subscribeButton = newsletterForm.querySelector('button[type="submit"]');
       const newsletterStatus = document.querySelector('.newsletter-status');
