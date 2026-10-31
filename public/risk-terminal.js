@@ -74,7 +74,8 @@
       </div>
 
       <div class="rt-layout">
-        <aside class="rt-panel rt-form-panel" aria-label="Portfolio inputs">
+        <div class="rt-sidebar">
+          <aside class="rt-panel rt-form-panel" aria-label="Portfolio inputs">
           <div class="rt-panel-head">
             <div><span class="rt-panel-kicker">Portfolio setup</span><h3>Risk inputs</h3></div>
             <span class="rt-saved" id="rt-saved" aria-live="polite">Saved locally</span>
@@ -117,7 +118,12 @@
             </div>
             <p class="rt-form-note">Use approximate values from your broker statement. No account connection, order placement or market-data feed is used.</p>
           </form>
-        </aside>
+          </aside>
+          <section class="rt-panel rt-guidance-panel" aria-labelledby="rt-guidance-heading">
+            <div class="rt-panel-head"><div><span class="rt-panel-kicker">Action framework</span><h3 id="rt-guidance-heading">Hedge guidance</h3></div></div>
+            <ol class="rt-guidance-list" id="rt-guidance"></ol>
+          </section>
+        </div>
 
         <div class="rt-dashboard" id="rt-dashboard" aria-live="polite">
           <div class="rt-metrics">
@@ -184,30 +190,49 @@
             </section>
           </div>
 
-          <div class="rt-lower">
-            <section class="rt-panel rt-positions-panel" aria-labelledby="rt-positions-heading">
-              <div class="rt-panel-head rt-position-head">
-                <div><span class="rt-panel-kicker">Your NIFTY positions</span><h3 id="rt-positions-heading">Position stress map</h3></div>
-                <button class="rt-add-position" type="button" id="rt-add-position"><span aria-hidden="true">＋</span> Add position</button>
-              </div>
-              <div class="rt-position-tools">
-                <span>Test NIFTY move</span>
-                <div class="rt-scenario-tabs" id="rt-position-tabs" role="tablist" aria-label="Position stress scenario">
-                  <button type="button" role="tab" data-position-scenario="-1">−1%</button>
-                  <button type="button" role="tab" data-position-scenario="0">Flat</button>
-                  <button type="button" role="tab" data-position-scenario="1">+1%</button>
-                </div>
-              </div>
-              <div class="rt-table-wrap"><table class="rt-table rt-position-table"><thead><tr><th>Strike</th><th>Type</th><th>Side</th><th>Quantity</th><th>Est. impact</th><th><span class="rt-sr-only">Remove</span></th></tr></thead><tbody id="rt-position-rows"></tbody></table></div>
-              <div class="rt-position-summary"><div><span>Combined directional impact</span><strong id="rt-position-total">₹0</strong></div><p>Illustrative delta-based estimate only. It excludes premium, IV, theta, slippage and live Greeks.</p></div>
-            </section>
-            <section class="rt-panel rt-guidance-panel" aria-labelledby="rt-guidance-heading">
-              <div class="rt-panel-head"><div><span class="rt-panel-kicker">Action framework</span><h3 id="rt-guidance-heading">Hedge guidance</h3></div></div>
-              <ol class="rt-guidance-list" id="rt-guidance"></ol>
-            </section>
-          </div>
         </div>
       </div>
+
+      <section class="rt-panel rt-positions-panel rt-position-workspace" aria-labelledby="rt-positions-heading">
+        <div class="rt-panel-head rt-position-head">
+          <div><span class="rt-panel-kicker">Your NIFTY positions</span><h3 id="rt-positions-heading">Position stress map &amp; payoff</h3></div>
+          <button class="rt-add-position" type="button" id="rt-add-position"><span aria-hidden="true">＋</span> Add position</button>
+        </div>
+        <div class="rt-position-workspace-body">
+          <div class="rt-position-editor">
+            <div class="rt-position-tools">
+              <span>Test NIFTY move</span>
+              <div class="rt-scenario-tabs" id="rt-position-tabs" role="tablist" aria-label="Position stress scenario">
+                <button type="button" role="tab" data-position-scenario="-1">−1%</button>
+                <button type="button" role="tab" data-position-scenario="0">Flat</button>
+                <button type="button" role="tab" data-position-scenario="1">+1%</button>
+              </div>
+            </div>
+            <div class="rt-table-wrap"><table class="rt-table rt-position-table"><thead><tr><th>Strike</th><th>Type</th><th>Side</th><th>Quantity</th><th>Est. impact</th><th><span class="rt-sr-only">Remove</span></th></tr></thead><tbody id="rt-position-rows"></tbody></table></div>
+            <div class="rt-position-summary"><div><span>Combined directional impact</span><strong id="rt-position-total">₹0</strong></div><p>Illustrative delta-based estimate only. It excludes premium, IV, theta, slippage and live Greeks.</p></div>
+          </div>
+          <div class="rt-payoff-panel">
+            <div class="rt-payoff-head">
+              <div><span class="rt-panel-kicker">Expiry view</span><h4>Payoff chart</h4></div>
+              <output id="rt-payoff-active">−1% · ₹0</output>
+            </div>
+            <div class="rt-payoff-chart-wrap">
+              <svg id="rt-payoff-chart" viewBox="0 0 640 300" role="img" aria-labelledby="rt-payoff-title rt-payoff-desc">
+                <title id="rt-payoff-title">Estimated NIFTY options payoff chart</title>
+                <desc id="rt-payoff-desc">Expiry-style payoff from negative six to positive six percent NIFTY movement, using the entered strikes, quantities and net credit.</desc>
+                <defs><linearGradient id="rt-payoff-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#86c9a9" stop-opacity=".24"/><stop offset="1" stop-color="#86c9a9" stop-opacity="0"/></linearGradient></defs>
+                <g id="rt-payoff-grid" aria-hidden="true"></g>
+                <path id="rt-payoff-area" fill="url(#rt-payoff-fill)" aria-hidden="true"></path>
+                <path id="rt-payoff-line" fill="none" stroke="#e0c07a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"></path>
+                <line id="rt-payoff-marker-line" stroke="#e0c07a" stroke-width="1" stroke-dasharray="4 5" aria-hidden="true"></line>
+                <circle id="rt-payoff-marker" r="5" fill="#f5f4f0" stroke="#c9a44c" stroke-width="3" aria-hidden="true"></circle>
+              </svg>
+            </div>
+            <div class="rt-payoff-legend"><span><i class="is-profit"></i>Profit</span><span><i class="is-loss"></i>Loss</span><strong id="rt-payoff-range">Range −6% to +6%</strong></div>
+            <p class="rt-payoff-note">Expiry-style estimate using net credit and intrinsic value. It excludes brokerage, taxes, slippage and early-exit Greeks.</p>
+          </div>
+        </div>
+      </section>
 
       <div class="rt-disclaimer"><strong>Important:</strong> This is an educational, deterministic scenario tool—not investment advice, a broker terminal, a pricing engine, VaR, or a promise of performance. Outputs use simplified assumptions and can differ materially from real option P&amp;L, margin requirements, liquidity, taxes, slippage and gap behaviour. Verify decisions independently with your broker and a qualified adviser.</div>
     </div>`;
@@ -339,17 +364,73 @@
     bar.style.background = healthColor(normalized);
   };
 
-  const estimatePositionImpact = position => {
+  const estimatePositionImpact = (position, scenario = state.positionScenario) => {
     const spot = Number(fields.spot.value) || state.spot;
     const strike = Number(position.strike);
     const qty = Number(position.qty);
-    if (spot <= 0 || strike <= 0 || qty <= 0 || state.positionScenario === 0) return 0;
-    const spotChange = spot * (state.positionScenario / 100);
+    if (spot <= 0 || strike <= 0 || qty <= 0 || scenario === 0) return 0;
+    const spotChange = spot * (scenario / 100);
     const moneyness = position.type === 'CE' ? (spot - strike) / spot : (strike - spot) / spot;
     const deltaMagnitude = clamp(.32 + moneyness * 4, .08, .9);
     const optionDelta = position.type === 'CE' ? deltaMagnitude : -deltaMagnitude;
     const sideMultiplier = position.side === 'BUY' ? 1 : -1;
     return Math.round(spotChange * optionDelta * qty * sideMultiplier);
+  };
+
+  const estimateExpiryPayoff = scenario => {
+    const spot = Number(fields.spot.value) || state.spot;
+    const targetSpot = spot * (1 + scenario / 100);
+    return Math.round(state.positions.reduce((total, position) => {
+      const strike = Number(position.strike);
+      const qty = Number(position.qty);
+      if (strike <= 0 || qty <= 0) return total;
+      const intrinsic = position.type === 'CE' ? Math.max(0, targetSpot - strike) : Math.max(0, strike - targetSpot);
+      return total + intrinsic * qty * (position.side === 'BUY' ? 1 : -1);
+    }, Number(fields.premium.value) || state.premium || 0));
+  };
+
+  const renderPayoffChart = () => {
+    const chart = $('#rt-payoff-chart');
+    if (!chart) return;
+    const width = 640, height = 300, left = 56, right = 18, top = 22, bottom = 42;
+    const plotWidth = width - left - right, plotHeight = height - top - bottom;
+    const scenarios = Array.from({ length: 49 }, (_, index) => -6 + index * .25);
+    const values = scenarios.map(estimateExpiryPayoff);
+    let minValue = Math.min(0, ...values), maxValue = Math.max(0, ...values);
+    if (minValue === maxValue) { minValue -= 1; maxValue += 1; }
+    const padding = Math.max((maxValue - minValue) * .12, 1);
+    minValue -= padding;
+    maxValue += padding;
+    const x = scenario => left + ((scenario + 6) / 12) * plotWidth;
+    const y = value => top + ((maxValue - value) / (maxValue - minValue)) * plotHeight;
+    const points = scenarios.map((scenario, index) => [x(scenario), y(values[index])]);
+    const linePath = points.map(([px, py], index) => `${index ? 'L' : 'M'}${px.toFixed(2)} ${py.toFixed(2)}`).join(' ');
+    const zeroY = y(0);
+    const areaPath = `${linePath} L${points.at(-1)[0].toFixed(2)} ${zeroY.toFixed(2)} L${points[0][0].toFixed(2)} ${zeroY.toFixed(2)} Z`;
+    $('#rt-payoff-line').setAttribute('d', linePath);
+    $('#rt-payoff-area').setAttribute('d', areaPath);
+
+    const grid = $('#rt-payoff-grid');
+    const xTicks = [-6, -3, 0, 3, 6];
+    const yTicks = [maxValue, (maxValue + minValue) / 2, minValue];
+    grid.innerHTML = [
+      ...xTicks.map(tick => `<line x1="${x(tick)}" y1="${top}" x2="${x(tick)}" y2="${height - bottom}" class="rt-chart-grid-line"/><text x="${x(tick)}" y="${height - 15}" text-anchor="middle" class="rt-chart-label">${tick > 0 ? '+' : ''}${tick}%</text>`),
+      ...yTicks.map(tick => `<line x1="${left}" y1="${y(tick)}" x2="${width - right}" y2="${y(tick)}" class="rt-chart-grid-line${Math.abs(tick) < padding ? ' is-zero' : ''}"/><text x="${left - 8}" y="${y(tick) + 4}" text-anchor="end" class="rt-chart-label">${compactInr(tick)}</text>`)
+    ].join('');
+
+    const activeScenario = state.positionScenario;
+    const activePayoff = estimateExpiryPayoff(activeScenario);
+    const markerX = x(activeScenario), markerY = y(activePayoff);
+    const markerLine = $('#rt-payoff-marker-line');
+    markerLine.setAttribute('x1', markerX); markerLine.setAttribute('x2', markerX);
+    markerLine.setAttribute('y1', top); markerLine.setAttribute('y2', height - bottom);
+    const marker = $('#rt-payoff-marker');
+    marker.setAttribute('cx', markerX); marker.setAttribute('cy', markerY);
+    const activeOutput = $('#rt-payoff-active');
+    activeOutput.textContent = `${activeScenario > 0 ? '+' : activeScenario < 0 ? '−' : ''}${Math.abs(activeScenario)}% · ${compactInr(activePayoff)}`;
+    activeOutput.classList.toggle('rt-pnl-negative', activePayoff < 0);
+    activeOutput.classList.toggle('rt-pnl-positive', activePayoff >= 0);
+    $('#rt-payoff-desc').textContent = `Estimated expiry payoff from a negative six to positive six percent NIFTY move. The selected ${activeScenario}% scenario is ${inr(activePayoff)}.`;
   };
 
   const refreshPositionImpacts = () => {
@@ -368,6 +449,7 @@
     totalOutput.textContent = total === 0 ? '₹0' : compactInr(total);
     totalOutput.classList.toggle('rt-pnl-negative', total < 0);
     totalOutput.classList.toggle('rt-pnl-positive', total > 0);
+    renderPayoffChart();
   };
 
   const renderPositions = () => {

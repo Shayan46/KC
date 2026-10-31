@@ -31,6 +31,9 @@ test('keeps the terminal local-only and includes key safeguards', async () => {
   assert.match(script, /data-position-scenario="-1"/);
   assert.match(script, /estimatePositionImpact/);
   assert.match(script, /data-position-field="strike"/);
+  assert.match(script, /id="rt-payoff-chart"/);
+  assert.match(script, /estimateExpiryPayoff/);
+  assert.match(script, /class="rt-sidebar"/);
   assert.match(script, /Analyse portfolio/);
   assert.match(script, /Scenario Lab/);
   assert.match(script, /Hedge guidance/);
