@@ -197,7 +197,7 @@
               <output id="rt-payoff-active">−1% · ₹0</output>
             </div>
             <div class="rt-payoff-chart-wrap">
-              <svg id="rt-payoff-chart" viewBox="0 0 640 300" role="img" aria-labelledby="rt-payoff-title rt-payoff-desc">
+              <svg id="rt-payoff-chart" viewBox="0 0 640 220" role="img" aria-labelledby="rt-payoff-title rt-payoff-desc">
                 <title id="rt-payoff-title">Estimated NIFTY options payoff chart</title>
                 <desc id="rt-payoff-desc">Expiry-style payoff from negative six to positive six percent NIFTY movement, using the entered strikes, quantities and net credit.</desc>
                 <defs><linearGradient id="rt-payoff-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#86c9a9" stop-opacity=".24"/><stop offset="1" stop-color="#86c9a9" stop-opacity="0"/></linearGradient></defs>
@@ -395,7 +395,7 @@
   const renderPayoffChart = () => {
     const chart = $('#rt-payoff-chart');
     if (!chart) return;
-    const width = 640, height = 300, left = 56, right = 18, top = 22, bottom = 42;
+    const width = 640, height = 220, left = 56, right = 18, top = 18, bottom = 34;
     const plotWidth = width - left - right, plotHeight = height - top - bottom;
     const scenarios = Array.from({ length: 49 }, (_, index) => -6 + index * .25);
     const values = scenarios.map(estimateExpiryPayoff);
@@ -479,19 +479,70 @@
     refreshPositionImpacts();
   };
 
+  const summarizePositionRisk = () => {
+    const totals = state.positions.reduce((summary, position) => {
+      const qty = Math.max(0, Number(position.qty) || 0);
+      if (!qty) return summary;
+      const bucket = `${position.side === 'BUY' ? 'long' : 'short'}${position.type === 'CE' ? 'Calls' : 'Puts'}`;
+      summary[bucket] += qty;
+      summary.legs += 1;
+      if (position.side === 'BUY' && position.type === 'PE') summary.putHedges.push(Number(position.strike));
+      if (position.side === 'BUY' && position.type === 'CE') summary.callHedges.push(Number(position.strike));
+      return summary;
+    }, { legs: 0, shortPuts: 0, shortCalls: 0, longPuts: 0, longCalls: 0, putHedges: [], callHedges: [] });
+    return {
+      ...totals,
+      uncoveredPuts: Math.max(0, totals.shortPuts - totals.longPuts),
+      uncoveredCalls: Math.max(0, totals.shortCalls - totals.longCalls),
+      coveredQuantity: Math.min(totals.shortPuts, totals.longPuts) + Math.min(totals.shortCalls, totals.longCalls)
+    };
+  };
+
   const renderGuidance = (utilisation, bufferRatio, stressLoss) => {
-    const reduce = Math.max(1, Math.ceil(state.lots * Math.max(0, utilisation - .62)));
-    const hedgeBudget = Math.round(state.capital * .006 / 500) * 500;
+    const positionRisk = summarizePositionRisk();
+    const capital = Math.max(1, Number(state.capital) || 1);
+    const releaseAmount = Math.max(0, state.margin - capital * .65);
+    const targetBuffer = Math.max(0, capital * .3 - (capital - state.margin));
+    const spot = Number(state.spot) || 0;
+    const suggestedPutWing = Math.round(spot * .96 / 50) * 50;
+    const suggestedCallWing = Math.round(spot * 1.04 / 50) * 50;
+    const putHedge = positionRisk.putHedges.filter(Number.isFinite).sort((a, b) => b - a)[0];
+    const callHedge = positionRisk.callHedges.filter(Number.isFinite).sort((a, b) => a - b)[0];
+    const scenarioLabel = `${signedPercent(state.marketMove)} NIFTY / ${state.ivChange > 0 ? '+' : state.ivChange < 0 ? '−' : ''}${Math.abs(state.ivChange)}% IV`;
+
+    let structureGuidance;
+    if (!positionRisk.legs) {
+      structureGuidance = ['Build the position map', 'Add each NIFTY option leg so the terminal can identify net-short exposure and protective wings.'];
+    } else if (positionRisk.uncoveredPuts || positionRisk.uncoveredCalls) {
+      const gaps = [
+        positionRisk.uncoveredPuts ? `${positionRisk.uncoveredPuts} PE quantity near ${suggestedPutWing}` : '',
+        positionRisk.uncoveredCalls ? `${positionRisk.uncoveredCalls} CE quantity near ${suggestedCallWing}` : ''
+      ].filter(Boolean).join(' and ');
+      structureGuidance = ['Close the open tail', `The entered legs leave ${gaps} net short. Compare a protective wing or reduced short quantity before carrying overnight.`];
+    } else if (positionRisk.shortPuts + positionRisk.shortCalls > 0) {
+      const strikes = [putHedge ? `${putHedge} PE` : '', callHedge ? `${callHedge} CE` : ''].filter(Boolean).join(' and ');
+      structureGuidance = ['Defined wings detected', `${positionRisk.coveredQuantity} short quantity is matched by long options${strikes ? ` at ${strikes}` : ''}. Recheck width and premium after every leg change.`];
+    } else {
+      structureGuidance = ['Long-premium book', `All ${positionRisk.legs} entered legs are net long. Treat the paid premium and time decay as the primary defined risk.`];
+    }
+
     const guidance = [
       utilisation > .65
-        ? [`Release margin`, `Reduce roughly ${reduce} short lot${reduce === 1 ? '' : 's'} or add collateral before carrying the book overnight.`]
-        : [`Protect the buffer`, `Current utilisation is within the model ceiling; preserve at least 30% deployable capital.`],
-      [`Define the left tail`, `Price a further OTM put spread with an illustrative budget near ${compactInr(hedgeBudget)}; compare protection gained, not only premium paid.`],
+        ? [`Release ${compactInr(releaseAmount)} of margin`, `Utilisation is ${Math.round(utilisation * 100)}%. Reduce entered short quantity or add collateral to move toward the 65% model ceiling.`]
+        : [`Protect the cash buffer`, `${Math.round(bufferRatio * 100)}% remains deployable${targetBuffer > 0 ? `; restore about ${compactInr(targetBuffer)} to reach 30%` : ', above the 30% model floor'}.`],
+      structureGuidance,
       stressLoss > state.capital * .12
-        ? [`Pre-commit an exit`, `The selected shock consumes ${Math.round(stressLoss / state.capital * 100)}% of capital. Set a loss and margin trigger before the next session.`]
-        : [`Retest after changes`, `Re-run the −4% / +20% IV case after every size or hedge adjustment.`]
+        ? [`Pre-commit an exit`, `The ${scenarioLabel} case consumes ${Math.round(stressLoss / capital * 100)}% of capital. Set a loss and margin trigger before the next session.`]
+        : [`Retest this scenario`, `The ${scenarioLabel} case uses ${Math.round(stressLoss / capital * 100)}% of capital. Re-run it after every size, strike or hedge adjustment.`]
     ];
     $('#rt-guidance').innerHTML = guidance.map((item, index) => `<li><span class="rt-guidance-num">0${index + 1}</span><div><strong>${item[0]}</strong><p>${item[1]}</p></div></li>`).join('');
+  };
+
+  const refreshGuidance = () => {
+    const capital = Math.max(1, Number(state.capital) || 1);
+    const utilisation = clamp((Number(state.margin) || 0) / capital, 0, 1.5);
+    const bufferRatio = (capital - (Number(state.margin) || 0)) / capital;
+    renderGuidance(utilisation, bufferRatio, Math.max(0, -estimatePnl()));
   };
 
   const render = () => {
@@ -556,6 +607,8 @@
       if (['capital', 'margin', 'premium'].includes(key)) renderNumberGuide(key);
       if (field.type === 'range') updateScenario();
       else {
+        readForm();
+        refreshGuidance();
         $('#rt-saved').textContent = 'Changes not analysed';
         if (field.getAttribute('aria-invalid') === 'true') validate();
       }
@@ -570,6 +623,7 @@
     const spot = Number(fields.spot.value) || state.spot;
     state.positions.push({ strike: Math.round(spot / 50) * 50, type: 'CE', side: 'SELL', qty: Math.max(1, state.lots * 75) });
     renderPositions();
+    refreshGuidance();
     saveState();
     const addedRow = $('#rt-position-rows').lastElementChild;
     addedRow?.querySelector('input')?.focus();
@@ -600,6 +654,7 @@
     if (field === 'strike' || field === 'qty') position[field] = Math.max(field === 'qty' ? 1 : 0, Math.round(Number(control.value) || 0));
     else position[field] = control.value;
     refreshPositionImpacts();
+    refreshGuidance();
     saveState();
   };
   $('#rt-position-rows').addEventListener('input', updatePosition);
@@ -609,6 +664,7 @@
     if (!button) return;
     state.positions.splice(Number(button.dataset.removePosition), 1);
     renderPositions();
+    refreshGuidance();
     saveState();
   });
 
