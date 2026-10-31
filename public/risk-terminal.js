@@ -48,6 +48,7 @@
   };
 
   let state = loadState();
+  let payoffPreviewScenario = state.positionScenario;
 
   host.innerHTML = `
     <div class="rt-wrap">
@@ -190,30 +191,9 @@
             </section>
           </div>
 
-        </div>
-      </div>
-
-      <section class="rt-panel rt-positions-panel rt-position-workspace" aria-labelledby="rt-positions-heading">
-        <div class="rt-panel-head rt-position-head">
-          <div><span class="rt-panel-kicker">Your NIFTY positions</span><h3 id="rt-positions-heading">Position stress map &amp; payoff</h3></div>
-          <button class="rt-add-position" type="button" id="rt-add-position"><span aria-hidden="true">＋</span> Add position</button>
-        </div>
-        <div class="rt-position-workspace-body">
-          <div class="rt-position-editor">
-            <div class="rt-position-tools">
-              <span>Test NIFTY move</span>
-              <div class="rt-scenario-tabs" id="rt-position-tabs" role="tablist" aria-label="Position stress scenario">
-                <button type="button" role="tab" data-position-scenario="-1">−1%</button>
-                <button type="button" role="tab" data-position-scenario="0">Flat</button>
-                <button type="button" role="tab" data-position-scenario="1">+1%</button>
-              </div>
-            </div>
-            <div class="rt-table-wrap"><table class="rt-table rt-position-table"><thead><tr><th>Strike</th><th>Type</th><th>Side</th><th>Quantity</th><th>Est. impact</th><th><span class="rt-sr-only">Remove</span></th></tr></thead><tbody id="rt-position-rows"></tbody></table></div>
-            <div class="rt-position-summary"><div><span>Combined directional impact</span><strong id="rt-position-total">₹0</strong></div><p>Illustrative delta-based estimate only. It excludes premium, IV, theta, slippage and live Greeks.</p></div>
-          </div>
-          <div class="rt-payoff-panel">
+          <section class="rt-panel rt-payoff-panel" aria-labelledby="rt-payoff-heading">
             <div class="rt-payoff-head">
-              <div><span class="rt-panel-kicker">Expiry view</span><h4>Payoff chart</h4></div>
+              <div><span class="rt-panel-kicker">Interactive expiry view</span><h3 id="rt-payoff-heading">Payoff explorer</h3></div>
               <output id="rt-payoff-active">−1% · ₹0</output>
             </div>
             <div class="rt-payoff-chart-wrap">
@@ -228,10 +208,33 @@
                 <circle id="rt-payoff-marker" r="5" fill="#f5f4f0" stroke="#c9a44c" stroke-width="3" aria-hidden="true"></circle>
               </svg>
             </div>
+            <div class="rt-payoff-scrubber">
+              <div><label for="rt-payoff-scrubber">Explore NIFTY move</label><output id="rt-payoff-scrubber-value" for="rt-payoff-scrubber">−1.00%</output></div>
+              <input id="rt-payoff-scrubber" type="range" min="-6" max="6" step="0.25" value="-1">
+              <div class="rt-scale"><span>−6%</span><span>Spot</span><span>+6%</span></div>
+            </div>
             <div class="rt-payoff-legend"><span><i class="is-profit"></i>Profit</span><span><i class="is-loss"></i>Loss</span><strong id="rt-payoff-range">Range −6% to +6%</strong></div>
-            <p class="rt-payoff-note">Expiry-style estimate using net credit and intrinsic value. It excludes brokerage, taxes, slippage and early-exit Greeks.</p>
+            <p class="rt-payoff-note">Drag the control to inspect the curve. Expiry-style estimate using net credit and intrinsic value; excludes brokerage, taxes, slippage and early-exit Greeks.</p>
+          </section>
+
+        </div>
+      </div>
+
+      <section class="rt-panel rt-positions-panel rt-position-workspace" aria-labelledby="rt-positions-heading">
+        <div class="rt-panel-head rt-position-head">
+          <div><span class="rt-panel-kicker">Your NIFTY positions</span><h3 id="rt-positions-heading">Position stress map &amp; payoff</h3></div>
+          <button class="rt-add-position" type="button" id="rt-add-position"><span aria-hidden="true">＋</span> Add position</button>
+        </div>
+        <div class="rt-position-tools">
+          <span>Test NIFTY move</span>
+          <div class="rt-scenario-tabs" id="rt-position-tabs" role="tablist" aria-label="Position stress scenario">
+            <button type="button" role="tab" data-position-scenario="-1">−1%</button>
+            <button type="button" role="tab" data-position-scenario="0">Flat</button>
+            <button type="button" role="tab" data-position-scenario="1">+1%</button>
           </div>
         </div>
+        <div class="rt-table-wrap"><table class="rt-table rt-position-table"><thead><tr><th>Strike</th><th>Type</th><th>Side</th><th>Quantity</th><th>Est. impact</th><th><span class="rt-sr-only">Remove</span></th></tr></thead><tbody id="rt-position-rows"></tbody></table></div>
+        <div class="rt-position-summary"><div><span>Combined directional impact</span><strong id="rt-position-total">₹0</strong></div><p>Illustrative delta-based estimate only. It excludes premium, IV, theta, slippage and live Greeks.</p></div>
       </section>
 
       <div class="rt-disclaimer"><strong>Important:</strong> This is an educational, deterministic scenario tool—not investment advice, a broker terminal, a pricing engine, VaR, or a promise of performance. Outputs use simplified assumptions and can differ materially from real option P&amp;L, margin requirements, liquidity, taxes, slippage and gap behaviour. Verify decisions independently with your broker and a qualified adviser.</div>
@@ -418,7 +421,7 @@
       ...yTicks.map(tick => `<line x1="${left}" y1="${y(tick)}" x2="${width - right}" y2="${y(tick)}" class="rt-chart-grid-line${Math.abs(tick) < padding ? ' is-zero' : ''}"/><text x="${left - 8}" y="${y(tick) + 4}" text-anchor="end" class="rt-chart-label">${compactInr(tick)}</text>`)
     ].join('');
 
-    const activeScenario = state.positionScenario;
+    const activeScenario = payoffPreviewScenario;
     const activePayoff = estimateExpiryPayoff(activeScenario);
     const markerX = x(activeScenario), markerY = y(activePayoff);
     const markerLine = $('#rt-payoff-marker-line');
@@ -430,6 +433,10 @@
     activeOutput.textContent = `${activeScenario > 0 ? '+' : activeScenario < 0 ? '−' : ''}${Math.abs(activeScenario)}% · ${compactInr(activePayoff)}`;
     activeOutput.classList.toggle('rt-pnl-negative', activePayoff < 0);
     activeOutput.classList.toggle('rt-pnl-positive', activePayoff >= 0);
+    const scrubber = $('#rt-payoff-scrubber');
+    const scrubberValue = $('#rt-payoff-scrubber-value');
+    scrubber.value = activeScenario;
+    scrubberValue.textContent = `${activeScenario > 0 ? '+' : activeScenario < 0 ? '−' : ''}${Math.abs(activeScenario).toFixed(2)}%`;
     $('#rt-payoff-desc').textContent = `Estimated expiry payoff from a negative six to positive six percent NIFTY move. The selected ${activeScenario}% scenario is ${inr(activePayoff)}.`;
   };
 
@@ -572,8 +579,14 @@
     const button = event.target.closest('[data-position-scenario]');
     if (!button) return;
     state.positionScenario = Number(button.dataset.positionScenario);
+    payoffPreviewScenario = state.positionScenario;
     renderPositions();
     saveState();
+  });
+
+  $('#rt-payoff-scrubber').addEventListener('input', event => {
+    payoffPreviewScenario = Number(event.target.value);
+    renderPayoffChart();
   });
 
   const updatePosition = event => {
@@ -619,6 +632,7 @@
 
   $('#rt-reset').addEventListener('click', () => {
     state = cloneDemo();
+    payoffPreviewScenario = state.positionScenario;
     syncFields();
     validate();
     render();
