@@ -27,6 +27,10 @@ test('keeps the terminal local-only and includes key safeguards', async () => {
   assert.match(script, /amountInWords/);
   assert.match(script, /Start typing to see the amount in words/);
   assert.match(script, /aria-describedby="rt-capital-guide rt-capital-error"/);
+  assert.match(script, /id="rt-add-position"/);
+  assert.match(script, /data-position-scenario="-1"/);
+  assert.match(script, /estimatePositionImpact/);
+  assert.match(script, /data-position-field="strike"/);
   assert.match(script, /Analyse portfolio/);
   assert.match(script, /Scenario Lab/);
   assert.match(script, /Hedge guidance/);

@@ -14,15 +14,36 @@
     eventRisk: 'high',
     marketMove: -4,
     ivChange: 20,
-    days: 1
+    days: 1,
+    positionScenario: -1,
+    positions: [
+      { strike: 25700, type: 'PE', side: 'SELL', qty: 450 },
+      { strike: 26300, type: 'CE', side: 'SELL', qty: 450 },
+      { strike: 24900, type: 'PE', side: 'BUY', qty: 450 },
+      { strike: 27100, type: 'CE', side: 'BUY', qty: 450 }
+    ]
   };
+
+  const normalizePositions = positions => Array.isArray(positions) ? positions.slice(0, 20).map(position => ({
+    strike: Math.max(0, Math.round(Number(position?.strike) || 0)),
+    type: position?.type === 'CE' ? 'CE' : 'PE',
+    side: position?.side === 'BUY' ? 'BUY' : 'SELL',
+    qty: Math.max(1, Math.round(Number(position?.qty) || 1))
+  })) : [];
+  const cloneDemo = () => ({ ...demo, positions: normalizePositions(demo.positions) });
 
   const loadState = () => {
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
-      return saved && typeof saved === 'object' ? { ...demo, ...saved } : { ...demo };
+      if (!saved || typeof saved !== 'object') return cloneDemo();
+      return {
+        ...cloneDemo(),
+        ...saved,
+        positionScenario: [-1, 0, 1].includes(Number(saved.positionScenario)) ? Number(saved.positionScenario) : -1,
+        positions: normalizePositions(Array.isArray(saved.positions) ? saved.positions : demo.positions)
+      };
     } catch {
-      return { ...demo };
+      return cloneDemo();
     }
   };
 
@@ -165,8 +186,20 @@
 
           <div class="rt-lower">
             <section class="rt-panel rt-positions-panel" aria-labelledby="rt-positions-heading">
-              <div class="rt-panel-head"><div><span class="rt-panel-kicker">Demo portfolio</span><h3 id="rt-positions-heading">Position stress map</h3></div><span class="rt-saved">Illustrative</span></div>
-              <div class="rt-table-wrap"><table class="rt-table"><thead><tr><th>Position</th><th>Side</th><th>Qty</th><th>−2%</th><th>−4%</th></tr></thead><tbody id="rt-position-rows"></tbody></table></div>
+              <div class="rt-panel-head rt-position-head">
+                <div><span class="rt-panel-kicker">Your NIFTY positions</span><h3 id="rt-positions-heading">Position stress map</h3></div>
+                <button class="rt-add-position" type="button" id="rt-add-position"><span aria-hidden="true">＋</span> Add position</button>
+              </div>
+              <div class="rt-position-tools">
+                <span>Test NIFTY move</span>
+                <div class="rt-scenario-tabs" id="rt-position-tabs" role="tablist" aria-label="Position stress scenario">
+                  <button type="button" role="tab" data-position-scenario="-1">−1%</button>
+                  <button type="button" role="tab" data-position-scenario="0">Flat</button>
+                  <button type="button" role="tab" data-position-scenario="1">+1%</button>
+                </div>
+              </div>
+              <div class="rt-table-wrap"><table class="rt-table rt-position-table"><thead><tr><th>Strike</th><th>Type</th><th>Side</th><th>Quantity</th><th>Est. impact</th><th><span class="rt-sr-only">Remove</span></th></tr></thead><tbody id="rt-position-rows"></tbody></table></div>
+              <div class="rt-position-summary"><div><span>Combined directional impact</span><strong id="rt-position-total">₹0</strong></div><p>Illustrative delta-based estimate only. It excludes premium, IV, theta, slippage and live Greeks.</p></div>
             </section>
             <section class="rt-panel rt-guidance-panel" aria-labelledby="rt-guidance-heading">
               <div class="rt-panel-head"><div><span class="rt-panel-kicker">Action framework</span><h3 id="rt-guidance-heading">Hedge guidance</h3></div></div>
@@ -306,21 +339,55 @@
     bar.style.background = healthColor(normalized);
   };
 
+  const estimatePositionImpact = position => {
+    const spot = Number(fields.spot.value) || state.spot;
+    const strike = Number(position.strike);
+    const qty = Number(position.qty);
+    if (spot <= 0 || strike <= 0 || qty <= 0 || state.positionScenario === 0) return 0;
+    const spotChange = spot * (state.positionScenario / 100);
+    const moneyness = position.type === 'CE' ? (spot - strike) / spot : (strike - spot) / spot;
+    const deltaMagnitude = clamp(.32 + moneyness * 4, .08, .9);
+    const optionDelta = position.type === 'CE' ? deltaMagnitude : -deltaMagnitude;
+    const sideMultiplier = position.side === 'BUY' ? 1 : -1;
+    return Math.round(spotChange * optionDelta * qty * sideMultiplier);
+  };
+
+  const refreshPositionImpacts = () => {
+    let total = 0;
+    state.positions.forEach((position, index) => {
+      const impact = estimatePositionImpact(position);
+      total += impact;
+      const output = $(`[data-position-impact="${index}"]`);
+      if (output) {
+        output.textContent = impact === 0 ? '₹0' : compactInr(impact);
+        output.classList.toggle('rt-pnl-negative', impact < 0);
+        output.classList.toggle('rt-pnl-positive', impact > 0);
+      }
+    });
+    const totalOutput = $('#rt-position-total');
+    totalOutput.textContent = total === 0 ? '₹0' : compactInr(total);
+    totalOutput.classList.toggle('rt-pnl-negative', total < 0);
+    totalOutput.classList.toggle('rt-pnl-positive', total > 0);
+  };
+
   const renderPositions = () => {
-    const rounded = Math.round(state.spot / 100) * 100;
-    const qty = state.lots * 75;
-    const rows = [
-      [`NIFTY ${rounded - 300} PE`, 'SELL', qty, -.13, -.38],
-      [`NIFTY ${rounded + 300} CE`, 'SELL', qty, -.04, -.08],
-      [`NIFTY ${rounded - 1100} PE`, 'BUY', qty, .025, .13],
-      [`NIFTY ${rounded + 1100} CE`, 'BUY', qty, .012, .025]
-    ];
-    $('#rt-position-rows').innerHTML = rows.map(([name, side, units, loss2, loss4]) => {
-      const base = state.capital * (state.lots / 6);
-      const p2 = base * loss2;
-      const p4 = base * loss4;
-      return `<tr><td>${name}</td><td class="${side === 'SELL' ? 'rt-side-sell' : 'rt-side-buy'}">${side}</td><td>${units.toLocaleString('en-IN')}</td><td class="${p2 < 0 ? 'rt-pnl-negative' : 'rt-pnl-positive'}">${compactInr(p2)}</td><td class="${p4 < 0 ? 'rt-pnl-negative' : 'rt-pnl-positive'}">${compactInr(p4)}</td></tr>`;
-    }).join('');
+    const rows = state.positions.map((position, index) => `
+      <tr data-position-index="${index}">
+        <td><input class="rt-position-input" data-position-field="strike" type="number" min="1" step="50" inputmode="numeric" aria-label="Strike price for position ${index + 1}" value="${position.strike || ''}"></td>
+        <td><select class="rt-position-select" data-position-field="type" aria-label="Option type for position ${index + 1}"><option value="PE"${position.type === 'PE' ? ' selected' : ''}>PE</option><option value="CE"${position.type === 'CE' ? ' selected' : ''}>CE</option></select></td>
+        <td><select class="rt-position-select" data-position-field="side" aria-label="Side for position ${index + 1}"><option value="BUY"${position.side === 'BUY' ? ' selected' : ''}>BUY</option><option value="SELL"${position.side === 'SELL' ? ' selected' : ''}>SELL</option></select></td>
+        <td><input class="rt-position-input rt-position-qty" data-position-field="qty" type="number" min="1" step="1" inputmode="numeric" aria-label="Quantity for position ${index + 1}" value="${position.qty}"></td>
+        <td><output class="rt-position-impact" data-position-impact="${index}">₹0</output></td>
+        <td><button class="rt-remove-position" type="button" data-remove-position="${index}" aria-label="Remove position ${index + 1}">×</button></td>
+      </tr>`).join('');
+    $('#rt-position-rows').innerHTML = rows || '<tr><td class="rt-position-empty" colspan="6">No positions yet. Add a NIFTY option leg to begin.</td></tr>';
+    $('#rt-position-tabs').querySelectorAll('[data-position-scenario]').forEach(button => {
+      const active = Number(button.dataset.positionScenario) === state.positionScenario;
+      button.classList.toggle('is-active', active);
+      button.setAttribute('aria-selected', String(active));
+      button.tabIndex = active ? 0 : -1;
+    });
+    refreshPositionImpacts();
   };
 
   const renderGuidance = (utilisation, bufferRatio, stressLoss) => {
@@ -406,6 +473,50 @@
     });
   });
 
+  $('#rt-add-position').addEventListener('click', () => {
+    if (state.positions.length >= 20) {
+      $('#rt-saved').textContent = 'Maximum 20 positions';
+      return;
+    }
+    const spot = Number(fields.spot.value) || state.spot;
+    state.positions.push({ strike: Math.round(spot / 50) * 50, type: 'CE', side: 'SELL', qty: Math.max(1, state.lots * 75) });
+    renderPositions();
+    saveState();
+    const addedRow = $('#rt-position-rows').lastElementChild;
+    addedRow?.querySelector('input')?.focus();
+  });
+
+  $('#rt-position-tabs').addEventListener('click', event => {
+    const button = event.target.closest('[data-position-scenario]');
+    if (!button) return;
+    state.positionScenario = Number(button.dataset.positionScenario);
+    renderPositions();
+    saveState();
+  });
+
+  const updatePosition = event => {
+    const control = event.target.closest('[data-position-field]');
+    const row = event.target.closest('[data-position-index]');
+    if (!control || !row) return;
+    const index = Number(row.dataset.positionIndex);
+    const field = control.dataset.positionField;
+    const position = state.positions[index];
+    if (!position) return;
+    if (field === 'strike' || field === 'qty') position[field] = Math.max(field === 'qty' ? 1 : 0, Math.round(Number(control.value) || 0));
+    else position[field] = control.value;
+    refreshPositionImpacts();
+    saveState();
+  };
+  $('#rt-position-rows').addEventListener('input', updatePosition);
+  $('#rt-position-rows').addEventListener('change', updatePosition);
+  $('#rt-position-rows').addEventListener('click', event => {
+    const button = event.target.closest('[data-remove-position]');
+    if (!button) return;
+    state.positions.splice(Number(button.dataset.removePosition), 1);
+    renderPositions();
+    saveState();
+  });
+
   $('#rt-analyse').addEventListener('click', () => {
     if (!validate()) return;
     const button = $('#rt-analyse');
@@ -425,7 +536,7 @@
   });
 
   $('#rt-reset').addEventListener('click', () => {
-    state = { ...demo };
+    state = cloneDemo();
     syncFields();
     validate();
     render();
