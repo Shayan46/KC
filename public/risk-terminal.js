@@ -62,17 +62,20 @@
             <div class="rt-field-grid">
               <div class="rt-field rt-span-2">
                 <label for="rt-capital">Trading capital <button class="rt-tip" type="button" aria-label="About trading capital" data-tooltip="Total liquid capital allocated to this strategy, including available cash and pledged collateral.">i</button></label>
-                <div class="rt-input-wrap"><span class="rt-prefix">₹</span><input class="has-prefix" id="rt-capital" name="capital" type="number" min="100000" step="50000" inputmode="numeric" required></div>
+                <div class="rt-input-wrap"><span class="rt-prefix">₹</span><input class="has-prefix" id="rt-capital" name="capital" type="number" min="100000" step="50000" inputmode="numeric" aria-describedby="rt-capital-guide rt-capital-error" required></div>
+                <div class="rt-number-guide" id="rt-capital-guide" aria-live="polite"></div>
                 <div class="rt-error" id="rt-capital-error"></div>
               </div>
               <div class="rt-field">
                 <label for="rt-margin">Margin blocked <button class="rt-tip" type="button" aria-label="About margin blocked" data-tooltip="Approximate total margin currently used by open positions. This is entered manually and is not connected to a broker.">i</button></label>
-                <div class="rt-input-wrap"><span class="rt-prefix">₹</span><input class="has-prefix" id="rt-margin" name="margin" type="number" min="0" step="10000" inputmode="numeric" required></div>
+                <div class="rt-input-wrap"><span class="rt-prefix">₹</span><input class="has-prefix" id="rt-margin" name="margin" type="number" min="0" step="10000" inputmode="numeric" aria-describedby="rt-margin-guide rt-margin-error" required></div>
+                <div class="rt-number-guide" id="rt-margin-guide" aria-live="polite"></div>
                 <div class="rt-error" id="rt-margin-error"></div>
               </div>
               <div class="rt-field">
                 <label for="rt-premium">Net credit</label>
-                <div class="rt-input-wrap"><span class="rt-prefix">₹</span><input class="has-prefix" id="rt-premium" name="premium" type="number" min="0" step="500" inputmode="numeric" required></div>
+                <div class="rt-input-wrap"><span class="rt-prefix">₹</span><input class="has-prefix" id="rt-premium" name="premium" type="number" min="0" step="500" inputmode="numeric" aria-describedby="rt-premium-guide rt-premium-error" required></div>
+                <div class="rt-number-guide" id="rt-premium-guide" aria-live="polite"></div>
                 <div class="rt-error" id="rt-premium-error"></div>
               </div>
               <div class="rt-field">
@@ -189,6 +192,49 @@
   };
   const signedPercent = value => `${value > 0 ? '+' : value < 0 ? '−' : ''}${Math.abs(value).toFixed(1)}%`;
 
+  const amountInWords = value => {
+    const number = Math.trunc(Math.abs(Number(value)));
+    if (!Number.isSafeInteger(number)) return '';
+    if (number === 0) return 'zero';
+
+    const ones = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+    const tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+    const belowHundred = amount => amount < 20 ? ones[amount] : `${tens[Math.floor(amount / 10)]}${amount % 10 ? `-${ones[amount % 10]}` : ''}`;
+    const convert = amount => {
+      if (amount < 100) return belowHundred(amount);
+      if (amount < 1000) return `${ones[Math.floor(amount / 100)]} hundred${amount % 100 ? ` ${convert(amount % 100)}` : ''}`;
+      if (amount < 100000) return `${convert(Math.floor(amount / 1000))} thousand${amount % 1000 ? ` ${convert(amount % 1000)}` : ''}`;
+      if (amount < 10000000) return `${convert(Math.floor(amount / 100000))} lakh${amount % 100000 ? ` ${convert(amount % 100000)}` : ''}`;
+      return `${convert(Math.floor(amount / 10000000))} crore${amount % 10000000 ? ` ${convert(amount % 10000000)}` : ''}`;
+    };
+
+    return convert(number);
+  };
+
+  const renderNumberGuide = key => {
+    const input = fields[key];
+    const guide = $(`#rt-${key}-guide`);
+    if (!input || !guide) return;
+    const rawValue = input.value.trim();
+    if (!rawValue) {
+      guide.textContent = 'Start typing to see the amount in words.';
+      guide.classList.add('is-placeholder');
+      return;
+    }
+    const value = Number(rawValue);
+    const words = amountInWords(value);
+    if (!Number.isFinite(value) || value < 0 || !words) {
+      guide.textContent = 'Enter a valid whole-rupee amount.';
+      guide.classList.add('is-placeholder');
+      return;
+    }
+    const spokenAmount = `${words.charAt(0).toUpperCase()}${words.slice(1)} rupees`;
+    guide.textContent = `${inr(Math.trunc(value))} · ${spokenAmount}`;
+    guide.classList.remove('is-placeholder');
+  };
+
+  const renderNumberGuides = () => ['capital', 'margin', 'premium'].forEach(renderNumberGuide);
+
   const fields = {
     capital: $('#rt-capital'), margin: $('#rt-margin'), premium: $('#rt-premium'),
     spot: $('#rt-spot'), lots: $('#rt-lots'), eventRisk: $('#rt-event'),
@@ -197,6 +243,7 @@
 
   const syncFields = () => {
     Object.entries(fields).forEach(([key, element]) => { element.value = state[key]; });
+    renderNumberGuides();
   };
 
   const saveState = () => {
@@ -347,8 +394,10 @@
     render();
   };
 
-  Object.values(fields).forEach(field => {
-    field.addEventListener(field.type === 'range' ? 'input' : 'change', () => {
+  Object.entries(fields).forEach(([key, field]) => {
+    const eventName = field.tagName === 'SELECT' ? 'change' : 'input';
+    field.addEventListener(eventName, () => {
+      if (['capital', 'margin', 'premium'].includes(key)) renderNumberGuide(key);
       if (field.type === 'range') updateScenario();
       else {
         $('#rt-saved').textContent = 'Changes not analysed';

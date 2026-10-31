@@ -24,6 +24,9 @@ test('keeps the terminal local-only and includes key safeguards', async () => {
   const script = await readFile(path.join(root, 'public', 'risk-terminal.js'), 'utf8');
 
   assert.match(script, /localStorage\.setItem/);
+  assert.match(script, /amountInWords/);
+  assert.match(script, /Start typing to see the amount in words/);
+  assert.match(script, /aria-describedby="rt-capital-guide rt-capital-error"/);
   assert.match(script, /Analyse portfolio/);
   assert.match(script, /Scenario Lab/);
   assert.match(script, /Hedge guidance/);
