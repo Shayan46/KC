@@ -66,9 +66,10 @@ test("references existing local assets and keeps image payload lean", async () =
       .filter(reference => !/^(?:#|https?:|mailto:|tel:|data:)/i.test(reference));
 
     for (const reference of references) {
-      const assetPath = path.resolve(base, reference);
+      const localReference = reference.split(/[?#]/, 1)[0];
+      const assetPath = path.resolve(base, localReference);
       await access(assetPath);
-      if (reference.endsWith(".webp")) imageAssets.add(assetPath);
+      if (localReference.endsWith(".webp")) imageAssets.add(assetPath);
     }
   }
 
